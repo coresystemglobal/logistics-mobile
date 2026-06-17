@@ -11,6 +11,7 @@ import '../../screens/auth/register_customer_screen.dart';
 import '../../screens/auth/register_rider_screen.dart';
 import '../../screens/auth/register_business_screen.dart';
 import '../../screens/auth/forgot_password_screen.dart';
+import '../../screens/auth/reset_password_screen.dart';
 import '../../screens/auth/email_verification_screen.dart';
 import '../../screens/customer/customer_shell.dart';
 import '../../screens/customer/customer_home_screen.dart';
@@ -82,6 +83,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/auth/register/rider', builder: (_, __) => const RegisterRiderScreen()),
       GoRoute(path: '/auth/register/business', builder: (_, __) => const RegisterBusinessScreen()),
       GoRoute(path: '/auth/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(
+        path: '/auth/reset-password',
+        builder: (context, state) => ResetPasswordScreen(
+          email: state.uri.queryParameters['email'] ?? '',
+        ),
+      ),
       GoRoute(
         path: '/auth/verify-email',
         builder: (context, state) => EmailVerificationScreen(
