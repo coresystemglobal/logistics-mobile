@@ -42,6 +42,7 @@ import '../../screens/customer/delivery_complete_screen.dart';
 import '../../screens/customer/transaction_history_screen.dart';
 import '../../screens/customer/change_password_screen.dart';
 import '../../screens/customer/referral_screen.dart';
+import '../../screens/legal/terms_of_service_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
@@ -166,6 +167,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(path: '/faq', builder: (_, __) => const FaqScreen()),
+      GoRoute(path: '/terms-of-service', builder: (_, __) => const TermsOfServiceScreen()),
       GoRoute(path: '/business/invoices', builder: (_, __) => const InvoicesScreen()),
 
       // Rider shell

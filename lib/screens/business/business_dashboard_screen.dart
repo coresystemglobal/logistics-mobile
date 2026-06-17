@@ -3,13 +3,51 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
 
-class BusinessDashboardScreen extends ConsumerWidget {
+class BusinessDashboardScreen extends ConsumerStatefulWidget {
   const BusinessDashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BusinessDashboardScreen> createState() =>
+      _BusinessDashboardScreenState();
+}
+
+class _BusinessDashboardScreenState
+    extends ConsumerState<BusinessDashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWelcome());
+  }
+
+  Future<void> _maybeShowWelcome() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || !mounted) return;
+    await showWelcomeWalkthrough(
+      context,
+      userId: user.id,
+      role: user.role,
+      firstName: user.firstName,
+    );
+  }
+
+  String _todayLabel() {
+    final now = DateTime.now();
+    const weekdays = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+      'Friday', 'Saturday', 'Sunday',
+    ];
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
     final businessName = user?.businessName ?? 'Adeola Fashola';
 
@@ -242,23 +280,6 @@ class BusinessDashboardScreen extends ConsumerWidget {
     );
   }
 
-  String _todayLabel() {
-    final now = DateTime.now();
-    const weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ];
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
-    return '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
-  }
 }
 
 class _StickyHeader extends SliverPersistentHeaderDelegate {

@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -26,6 +27,16 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
   final _vehiclePlateCtrl = TextEditingController();
   String _vehicleType = 'MOTORCYCLE';
   bool _isLoading = false;
+  bool _termsAccepted = false;
+  bool _termsError = false;
+
+  String _normalizePhone(String phone) {
+    phone = phone.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    if (phone.startsWith('+')) return phone;
+    if (phone.startsWith('234')) return '+$phone';
+    if (phone.startsWith('0')) return '+234${phone.substring(1)}';
+    return '+234$phone';
+  }
 
   static const _vehicleTypes = [
     (type: 'BICYCLE', icon: Icons.pedal_bike_rounded, label: 'Bicycle'),
@@ -48,6 +59,10 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!_termsAccepted) {
+      setState(() => _termsError = true);
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       final email = _emailCtrl.text.trim();
@@ -55,7 +70,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
             firstName: _firstNameCtrl.text.trim(),
             surname: _surnameCtrl.text.trim(),
             email: email,
-            phone: _phoneCtrl.text.trim(),
+            phone: _normalizePhone(_phoneCtrl.text.trim()),
             password: _passwordCtrl.text,
             vehicleType: _vehicleType,
             referralCode: _referralCtrl.text.trim().isNotEmpty
@@ -347,7 +362,68 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
+
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Checkbox(
+                              value: _termsAccepted,
+                              onChanged: (v) => setState(() {
+                                _termsAccepted = v ?? false;
+                                if (_termsAccepted) _termsError = false;
+                              }),
+                              activeColor: AppColors.accent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: AppColors.textTertiary,
+                                  height: 1.5,
+                                ),
+                                children: [
+                                  const TextSpan(text: 'I agree to the '),
+                                  TextSpan(
+                                    text: 'Terms of Service',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      color: AppColors.accent,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () => context.push('/terms-of-service'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_termsError) ...[
+                        const SizedBox(height: 4),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 34),
+                          child: Text(
+                            'You must accept the Terms of Service',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 24),
 
                       TrakaButton(
                         label: 'Create Rider Account',

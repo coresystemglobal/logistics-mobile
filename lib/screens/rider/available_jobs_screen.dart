@@ -3,17 +3,41 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/welcome_walkthrough.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/rider_service.dart';
 
 final _availableJobsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
   (ref) => RiderService().getAvailableJobs(),
 );
 
-class AvailableJobsScreen extends ConsumerWidget {
+class AvailableJobsScreen extends ConsumerStatefulWidget {
   const AvailableJobsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AvailableJobsScreen> createState() => _AvailableJobsScreenState();
+}
+
+class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWelcome());
+  }
+
+  Future<void> _maybeShowWelcome() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || !mounted) return;
+    await showWelcomeWalkthrough(
+      context,
+      userId: user.id,
+      role: user.role,
+      firstName: user.firstName,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final jobsAsync = ref.watch(_availableJobsProvider);
 
     return Scaffold(

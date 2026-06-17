@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/delivery_card.dart';
+import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/package_service.dart';
 import '../../models/package_model.dart';
@@ -20,11 +21,33 @@ String _greeting() {
   return 'Good evening';
 }
 
-class CustomerHomeScreen extends ConsumerWidget {
+class CustomerHomeScreen extends ConsumerStatefulWidget {
   const CustomerHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CustomerHomeScreen> createState() => _CustomerHomeScreenState();
+}
+
+class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowWelcome());
+  }
+
+  Future<void> _maybeShowWelcome() async {
+    final user = ref.read(authProvider).user;
+    if (user == null || !mounted) return;
+    await showWelcomeWalkthrough(
+      context,
+      userId: user.id,
+      role: user.role,
+      firstName: user.firstName,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final packagesAsync = ref.watch(_customerPackagesProvider);
     final firstName = authState.user?.firstName ?? 'there';

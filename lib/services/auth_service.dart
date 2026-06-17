@@ -40,6 +40,7 @@ class AuthService {
       'email': email,
       'phone': phone,
       'password': password,
+      'terms_accepted': true,
     });
     final accessToken = response['access_token'] ?? response['token'];
     final refreshToken = response['refresh_token'];
@@ -77,6 +78,7 @@ class AuthService {
       if (vehiclePlate != null && vehiclePlate.isNotEmpty)
         'vehicle_plate': vehiclePlate,
     };
+    data['terms_accepted'] = true;
     final response = await _api.post(ApiEndpoints.registerRider, data: data);
     final accessToken = response['access_token'] ?? response['token'];
     final refreshToken = response['refresh_token'];
@@ -104,6 +106,7 @@ class AuthService {
       'phone': phone,
       'password': password,
       'business_address': address,
+      'terms_accepted': true,
     });
     final accessToken = response['access_token'] ?? response['token'];
     final refreshToken = response['refresh_token'];
