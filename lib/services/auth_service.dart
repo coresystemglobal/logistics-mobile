@@ -71,6 +71,7 @@ class AuthService {
       'phone': phone,
       'password': password,
       'vehicle_type': vehicleType,
+      'terms_accepted': true,
       if (referralCode != null && referralCode.isNotEmpty)
         'referral_code': referralCode,
       if (licenseNumber != null && licenseNumber.isNotEmpty)
@@ -78,7 +79,6 @@ class AuthService {
       if (vehiclePlate != null && vehiclePlate.isNotEmpty)
         'vehicle_plate': vehiclePlate,
     };
-    data['terms_accepted'] = true;
     final response = await _api.post(ApiEndpoints.registerRider, data: data);
     final accessToken = response['access_token'] ?? response['token'];
     final refreshToken = response['refresh_token'];
