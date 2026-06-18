@@ -55,10 +55,7 @@ class ApiClient {
   }
 
   void _onError(DioException err, ErrorInterceptorHandler handler) async {
-    debugPrint('[API ERROR] ${err.requestOptions.method} ${err.requestOptions.path}');
-    debugPrint('[API ERROR] Status: ${err.response?.statusCode}');
-    debugPrint('[API ERROR] Response body: ${err.response?.data}');
-    debugPrint('[API ERROR] Message: ${err.message}');
+    debugPrint('[API ERROR] ${err.requestOptions.method} ${err.requestOptions.path} → ${err.response?.statusCode} ${err.message}');
 
     if (err.response?.statusCode == 401) {
       // Try token refresh
