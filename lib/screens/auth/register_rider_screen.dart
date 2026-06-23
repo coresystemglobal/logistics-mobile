@@ -264,7 +264,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                                     vertical: 14),
                                 decoration: BoxDecoration(
                                   color: selected
-                                      ? AppColors.success.withOpacity(0.08)
+                                      ? AppColors.success.withValues(alpha: 0.08)
                                       : AppColors.bgPrimary,
                                   borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
@@ -340,10 +340,10 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.08),
+                          color: AppColors.success.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.success.withOpacity(0.3)),
+                              color: AppColors.success.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [

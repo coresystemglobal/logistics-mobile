@@ -23,10 +23,10 @@ class RiderShell extends ConsumerWidget {
       body: child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface.withOpacity(0.95),
+          color: AppColors.surface.withValues(alpha: 0.95),
           border: Border(
             top: BorderSide(
-              color: AppColors.separator.withOpacity(0.4),
+              color: AppColors.separator.withValues(alpha: 0.4),
               width: 0.5,
             ),
           ),

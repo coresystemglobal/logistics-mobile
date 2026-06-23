@@ -238,10 +238,10 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.iosBlue.withOpacity(0.06),
+                          color: AppColors.iosBlue.withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.iosBlue.withOpacity(0.2)),
+                              color: AppColors.iosBlue.withValues(alpha: 0.2)),
                         ),
                         child: Row(
                           children: [

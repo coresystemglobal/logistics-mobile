@@ -70,7 +70,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           margin: const EdgeInsets.symmetric(vertical: 6),
-          shadowColor: Colors.black.withOpacity(0.05),
+          shadowColor: Colors.black.withValues(alpha: 0.05),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -139,7 +139,7 @@ class AppTheme {
           thickness: 0.5,
         ),
         bottomNavigationBarTheme: BottomNavigationBarThemeData(
-          backgroundColor: AppColors.bgPrimary.withOpacity(0.92),
+          backgroundColor: AppColors.bgPrimary.withValues(alpha: 0.92),
           selectedItemColor: AppColors.accent,
           unselectedItemColor: AppColors.textQuaternary,
           type: BottomNavigationBarType.fixed,

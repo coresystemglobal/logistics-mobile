@@ -91,7 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       Container(
                         width: 64,
                         height: 64,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.accentLight,
                           shape: BoxShape.circle,
                         ),

@@ -71,7 +71,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     center: Alignment.center,
                     radius: 0.8,
                     colors: [
-                      AppColors.accent.withOpacity(0.08),
+                      AppColors.accent.withValues(alpha: 0.08),
                       Colors.transparent,
                     ],
                   ),
@@ -132,7 +132,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: AppColors.accent.withOpacity(opacity),
+                              color: AppColors.accent.withValues(alpha: opacity),
                               shape: BoxShape.circle,
                             ),
                           ),

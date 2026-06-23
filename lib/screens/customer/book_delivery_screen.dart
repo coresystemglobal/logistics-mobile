@@ -31,9 +31,11 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
   void _onAddressFieldChanged() => setState(() {});
 
   // Step 2: Package
-  String _packageType = 'DOCUMENT';
+  String _category = 'OTHERS';
   String _packageSize = 'SMALL';
-  String _scheduleType = 'IMMEDIATE';
+  String _deliverySpeed = 'STANDARD';
+  final _descriptionCtrl = TextEditingController();
+  final _deliveryNotesCtrl = TextEditingController();
 
   // Step 3: Review
   QuoteModel? _quote;
@@ -43,14 +45,22 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
   final _matchingService = MatchingService();
   final _packageService = PackageService();
 
-  static const _packageTypes = [
-    'Document', 'Clothing', 'Electronics', 'Food', 'Other'
+  static const _categories = [
+    ('FOOD', 'Food'),
+    ('DOCUMENTS', 'Documents'),
+    ('CLOTHING', 'Clothing'),
+    ('ELECTRONICS', 'Electronics'),
+    ('SHOES', 'Shoes'),
+    ('GROCERIES', 'Groceries'),
+    ('HEALTH_PHARMACEUTICALS', 'Health'),
+    ('JEWELRY_VALUABLES', 'Valuables'),
+    ('HOUSEHOLD_ITEMS', 'Household'),
+    ('OTHERS', 'Others'),
   ];
   static const _packageSizes = [
     _PackageSize('SMALL', 'Small', Icons.mail_outline_rounded, 'Included'),
     _PackageSize('MEDIUM', 'Medium', Icons.inventory_2_outlined, '+₦500'),
     _PackageSize('LARGE', 'Large', Icons.inventory_outlined, '+₦1,200'),
-    _PackageSize('EXTRA_LARGE', 'XL', Icons.local_shipping_outlined, '+₦2,000'),
   ];
 
   @override
@@ -60,6 +70,8 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
     _deliveryCtrl.dispose();
     _recipientNameCtrl.dispose();
     _recipientPhoneCtrl.dispose();
+    _descriptionCtrl.dispose();
+    _deliveryNotesCtrl.dispose();
     super.dispose();
   }
 
@@ -69,12 +81,16 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
       _recipientNameCtrl.text.isNotEmpty &&
       _recipientPhoneCtrl.text.isNotEmpty;
 
+  bool get _step2Valid => _category != 'OTHERS' || _descriptionCtrl.text.trim().isNotEmpty;
+
   Future<void> _goToReview() async {
     setState(() {_isQuoting = true; _quote = null;});
     try {
       final quote = await _matchingService.getQuote(
         pickupAddress: _pickupCtrl.text.trim(),
         deliveryAddress: _deliveryCtrl.text.trim(),
+        packageSize: _packageSize,
+        deliverySpeed: _deliverySpeed,
       );
       if (mounted) {
         setState(() {
@@ -103,15 +119,22 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
       final pkg = await _packageService.createPackage(
         pickupAddress: _pickupCtrl.text.trim(),
         deliveryAddress: _deliveryCtrl.text.trim(),
-        packageType: _packageType.toUpperCase(),
-        scheduleType: _scheduleType,
-        recipientDetails: {
-          'recipient_name': _recipientNameCtrl.text.trim(),
-          'recipient_phone': _recipientPhoneCtrl.text.trim(),
-        },
+        recipientName: _recipientNameCtrl.text.trim(),
+        recipientPhone: _recipientPhoneCtrl.text.trim(),
+        description: _category == 'OTHERS'
+            ? _descriptionCtrl.text.trim()
+            : _categories.firstWhere((c) => c.$1 == _category).$2,
+        category: _category,
+        packageSize: _packageSize,
+        deliverySpeed: _deliverySpeed,
+        deliveryNotes: _deliveryNotesCtrl.text.trim().isEmpty
+            ? null
+            : _deliveryNotesCtrl.text.trim(),
       );
       if (mounted) {
-        context.pushReplacement('/customer/booking-confirm/${pkg.trackingNumber}');
+        final tn = pkg.trackingNumber;
+        final uri = '/customer/booking-confirm/${pkg.id}';
+        context.go(tn != null && tn.isNotEmpty ? '$uri?trackingNumber=$tn' : uri);
       }
     } catch (e) {
       if (mounted) {
@@ -229,26 +252,26 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
                     onFieldChanged: _onAddressFieldChanged,
                   ),
                   _StepPackage(
-                    selectedType: _packageType,
+                    selectedCategory: _category,
                     selectedSize: _packageSize,
-                    selectedSchedule: _scheduleType,
-                    packageTypes: _packageTypes,
+                    selectedSpeed: _deliverySpeed,
+                    categories: _categories,
                     packageSizes: _packageSizes,
-                    onTypeChanged: (t) =>
-                        setState(() => _packageType = t),
-                    onSizeChanged: (s) =>
-                        setState(() => _packageSize = s),
-                    onScheduleChanged: (s) =>
-                        setState(() => _scheduleType = s),
+                    descriptionCtrl: _descriptionCtrl,
+                    deliveryNotesCtrl: _deliveryNotesCtrl,
+                    onCategoryChanged: (t) => setState(() => _category = t),
+                    onSizeChanged: (s) => setState(() => _packageSize = s),
+                    onSpeedChanged: (s) => setState(() => _deliverySpeed = s),
+                    onDescriptionChanged: (_) => setState(() {}),
                   ),
                   _StepReview(
                     pickupAddress: _pickupCtrl.text,
                     deliveryAddress: _deliveryCtrl.text,
                     recipientName: _recipientNameCtrl.text,
                     recipientPhone: _recipientPhoneCtrl.text,
-                    packageType: _packageType,
+                    packageType: _category,
                     packageSize: _packageSize,
-                    scheduleType: _scheduleType,
+                    deliverySpeed: _deliverySpeed,
                     quote: _quote,
                   ),
                 ],
@@ -266,7 +289,8 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
                   : TrakaButton(
                       label: _currentStep == 1 ? 'Continue to Review' : 'Continue',
                       loading: _isQuoting,
-                      onPressed: (_currentStep == 0 && !_step1Valid)
+                      onPressed: (_currentStep == 0 && !_step1Valid) ||
+                          (_currentStep == 1 && !_step2Valid)
                           ? null
                           : _nextStep,
                     ),
@@ -315,7 +339,7 @@ class _StepAddressState extends State<_StepAddress> {
               color: AppColors.bgPrimary,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: AppColors.separator.withOpacity(0.3)),
+                  color: AppColors.separator.withValues(alpha: 0.3)),
               boxShadow: const [
                 BoxShadow(
                     color: Color(0x08000000),
@@ -418,7 +442,7 @@ class _StepAddressState extends State<_StepAddress> {
                   color: AppColors.surfaceContainer,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                      color: AppColors.separator.withOpacity(0.3)),
+                      color: AppColors.separator.withValues(alpha: 0.3)),
                 ),
                 child: const Center(
                   child: Icon(Icons.map_outlined,
@@ -452,24 +476,30 @@ class _StepAddressState extends State<_StepAddress> {
 }
 
 class _StepPackage extends StatelessWidget {
-  final String selectedType;
+  final String selectedCategory;
   final String selectedSize;
-  final String selectedSchedule;
-  final List<String> packageTypes;
+  final String selectedSpeed;
+  final List<(String, String)> categories;
   final List<_PackageSize> packageSizes;
-  final ValueChanged<String> onTypeChanged;
+  final TextEditingController descriptionCtrl;
+  final TextEditingController deliveryNotesCtrl;
+  final ValueChanged<String> onCategoryChanged;
   final ValueChanged<String> onSizeChanged;
-  final ValueChanged<String> onScheduleChanged;
+  final ValueChanged<String> onSpeedChanged;
+  final ValueChanged<String> onDescriptionChanged;
 
   const _StepPackage({
-    required this.selectedType,
+    required this.selectedCategory,
     required this.selectedSize,
-    required this.selectedSchedule,
-    required this.packageTypes,
+    required this.selectedSpeed,
+    required this.categories,
     required this.packageSizes,
-    required this.onTypeChanged,
+    required this.descriptionCtrl,
+    required this.deliveryNotesCtrl,
+    required this.onCategoryChanged,
     required this.onSizeChanged,
-    required this.onScheduleChanged,
+    required this.onSpeedChanged,
+    required this.onDescriptionChanged,
   });
 
   @override
@@ -479,49 +509,58 @@ class _StepPackage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Package category chips
+          // Package category
           Text('Package Category',
               style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: packageTypes.map((t) {
-                final isSelected = t.toUpperCase() == selectedType;
-                return GestureDetector(
-                  onTap: () => onTypeChanged(t.toUpperCase()),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.accent
-                          : AppColors.surfaceContainer,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      t,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : AppColors.textSecondary,
-                      ),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: categories.map((cat) {
+              final isSelected = cat.$1 == selectedCategory;
+              return GestureDetector(
+                onTap: () => onCategoryChanged(cat.$1),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.accent : AppColors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    cat.$2,
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: isSelected ? Colors.white : AppColors.textSecondary,
                     ),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+              );
+            }).toList(),
           ),
+          if (selectedCategory == 'OTHERS') ...[
+            const SizedBox(height: 16),
+            Text('Describe what you\'re sending *',
+                style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
+            TrakaInput(
+              hint: 'e.g. Handmade item, custom order...',
+              controller: descriptionCtrl,
+              maxLines: 2,
+              textInputAction: TextInputAction.next,
+              onChanged: onDescriptionChanged,
+            ),
+          ],
           const SizedBox(height: 24),
           // Size grid
-          Text('Approximate Size',
+          Text('Package Size',
               style: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.textSecondary,
@@ -530,55 +569,52 @@ class _StepPackage extends StatelessWidget {
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
+            crossAxisCount: 3,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
-            childAspectRatio: 1.6,
+            childAspectRatio: 1.3,
             children: packageSizes.map((s) {
               final isSelected = s.id == selectedSize;
               return GestureDetector(
                 onTap: () => onSizeChanged(s.id),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.accentLight
-                        : AppColors.bgPrimary,
-                    borderRadius: BorderRadius.circular(16),
+                    color: isSelected ? AppColors.accentLight : AppColors.bgPrimary,
+                    borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isSelected
-                          ? AppColors.accent
-                          : AppColors.separator,
+                      color: isSelected ? AppColors.accent : AppColors.separator,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(s.icon,
-                          color: isSelected
-                              ? AppColors.accent
-                              : AppColors.textTertiary,
-                          size: 24),
-                      const SizedBox(height: 4),
-                      Text(s.label,
-                          style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary)),
-                      Text(s.price,
-                          style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: AppColors.textTertiary)),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(s.icon,
+                            color: isSelected ? AppColors.accent : AppColors.textTertiary,
+                            size: 22),
+                        const SizedBox(height: 4),
+                        Text(s.label,
+                            style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary)),
+                        Text(s.price,
+                            style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: AppColors.textTertiary)),
+                      ],
+                    ),
                   ),
                 ),
               );
             }).toList(),
           ),
           const SizedBox(height: 24),
-          // Schedule
+          // Delivery Speed
           Text('Delivery Speed',
               style: GoogleFonts.inter(
                   fontSize: 13,
@@ -586,22 +622,19 @@ class _StepPackage extends StatelessWidget {
                   fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           ...[
-            ('IMMEDIATE', 'Immediate', '1–3 hrs', AppColors.success),
+            ('STANDARD', 'Standard', '2–3 hours', AppColors.iosBlue),
+            ('EXPRESS', 'Express', 'Within the hour', AppColors.success),
             ('SAME_DAY', 'Same Day', 'By end of day', AppColors.accent),
-            ('NEXT_DAY', 'Next Day', 'Tomorrow', AppColors.iosBlue),
           ].map((item) {
-            final isSelected = selectedSchedule == item.$1;
+            final isSelected = selectedSpeed == item.$1;
             return GestureDetector(
-              onTap: () => onScheduleChanged(item.$1),
+              onTap: () => onSpeedChanged(item.$1),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? item.$4.withOpacity(0.08)
-                      : AppColors.bgPrimary,
+                  color: isSelected ? item.$4.withValues(alpha: 0.08) : AppColors.bgPrimary,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: isSelected ? item.$4 : AppColors.separator,
@@ -610,36 +643,42 @@ class _StepPackage extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.access_time_rounded,
-                        color: item.$4, size: 20),
+                    Icon(Icons.access_time_rounded, color: item.$4, size: 20),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        item.$2,
+                      child: Text(item.$2,
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary)),
+                    ),
+                    Text(item.$3,
                         style: GoogleFonts.inter(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      item.$3,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppColors.textTertiary,
-                      ),
-                    ),
+                            fontSize: 13, color: AppColors.textTertiary)),
                     if (isSelected) ...[
                       const SizedBox(width: 8),
-                      Icon(Icons.check_circle_rounded,
-                          color: item.$4, size: 20),
+                      Icon(Icons.check_circle_rounded, color: item.$4, size: 20),
                     ],
                   ],
                 ),
               ),
             );
           }),
+          const SizedBox(height: 20),
+          // Delivery notes
+          Text('Delivery Notes (optional)',
+              style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500)),
+          const SizedBox(height: 8),
+          TrakaInput(
+            hint: 'e.g. Leave at the gate, call on arrival...',
+            controller: deliveryNotesCtrl,
+            maxLines: 2,
+            textInputAction: TextInputAction.done,
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -653,7 +692,7 @@ class _StepReview extends StatelessWidget {
   final String recipientPhone;
   final String packageType;
   final String packageSize;
-  final String scheduleType;
+  final String deliverySpeed;
   final QuoteModel? quote;
 
   const _StepReview({
@@ -663,12 +702,17 @@ class _StepReview extends StatelessWidget {
     required this.recipientPhone,
     required this.packageType,
     required this.packageSize,
-    required this.scheduleType,
+    required this.deliverySpeed,
     this.quote,
   });
 
+  String _fmt(double? v) => v != null ? '₦${v.toStringAsFixed(0)}' : '—';
+
   @override
   Widget build(BuildContext context) {
+    final q = quote;
+    final hasBreakdown = q != null && q.estimatedCost > 0;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -679,98 +723,116 @@ class _StepReview extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.bgPrimary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: AppColors.separator.withOpacity(0.3)),
-              boxShadow: const [
-                BoxShadow(
-                    color: Color(0x08000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 4)),
-              ],
+              border: Border.all(color: AppColors.separator.withValues(alpha: 0.3)),
+              boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 12, offset: Offset(0, 4))],
             ),
             child: Column(
               children: [
-                _ReviewRow('Pickup', pickupAddress, Icons.radio_button_checked,
-                    AppColors.accent),
+                _ReviewRow('Pickup', pickupAddress, Icons.radio_button_checked, AppColors.accent),
                 const Divider(color: AppColors.separator, thickness: 0.5),
-                _ReviewRow('Delivery to', '$recipientName\n$deliveryAddress',
-                    Icons.flag_rounded, AppColors.textPrimary),
+                _ReviewRow('Delivery to', '$recipientName\n$deliveryAddress', Icons.flag_rounded, AppColors.textPrimary),
                 const Divider(color: AppColors.separator, thickness: 0.5),
-                _ReviewRow('Package', '$packageType — $packageSize',
-                    Icons.inventory_2_outlined, AppColors.iosBlue),
+                _ReviewRow('Package', '$packageType · $packageSize', Icons.inventory_2_outlined, AppColors.iosBlue),
                 const Divider(color: AppColors.separator, thickness: 0.5),
-                _ReviewRow('Schedule',
-                    scheduleType.replaceAll('_', ' '),
-                    Icons.access_time_rounded, AppColors.success),
+                _ReviewRow('Speed', deliverySpeed.replaceAll('_', ' '), Icons.access_time_rounded, AppColors.success),
+                if (q?.distanceKm != null) ...[
+                  const Divider(color: AppColors.separator, thickness: 0.5),
+                  _ReviewRow('Distance', '${q!.distanceKm!.toStringAsFixed(1)} km', Icons.straighten_rounded, AppColors.textTertiary),
+                ],
+                if (q?.deliveryEta != null) ...[
+                  const Divider(color: AppColors.separator, thickness: 0.5),
+                  _ReviewRow('Est. arrival', q!.deliveryEta!, Icons.schedule_rounded, AppColors.textTertiary),
+                ],
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
           // Price breakdown
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.bgPrimary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: AppColors.separator.withOpacity(0.3)),
+              border: Border.all(color: AppColors.separator.withValues(alpha: 0.3)),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _PriceRow('Delivery fee',
-                    quote != null
-                        ? '₦${quote!.estimatedCost.toStringAsFixed(0)}'
-                        : '—'),
-                const SizedBox(height: 8),
-                _PriceRow('Platform fee', '₦50'),
-                const Divider(color: AppColors.separator, thickness: 0.5),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Total',
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        )),
-                    Text(
-                      quote != null
-                          ? '₦${(quote!.estimatedCost + 50).toStringAsFixed(0)}'
-                          : 'Calculating...',
-                      style: GoogleFonts.inter(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.accent,
-                      ),
-                    ),
+                Text('Price Breakdown',
+                    style: GoogleFonts.inter(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary)),
+                const SizedBox(height: 12),
+                if (!hasBreakdown)
+                  const _PriceLoader()
+                else ...[
+                  if (q.baseFee != null)
+                    _PriceRow('Base fee', _fmt(q.baseFee)),
+                  if (q.distanceFee != null) ...[
+                    const SizedBox(height: 6),
+                    _PriceRow('Distance fee', _fmt(q.distanceFee)),
                   ],
-                ),
+                  if (q.sizeFee != null && q.sizeFee! > 0) ...[
+                    const SizedBox(height: 6),
+                    _PriceRow('Size fee', _fmt(q.sizeFee)),
+                  ],
+                  if (q.speedFee != null && q.speedFee! > 0) ...[
+                    const SizedBox(height: 6),
+                    _PriceRow('Speed fee', _fmt(q.speedFee)),
+                  ],
+                  if (q.fuelAdjustment != null && q.fuelAdjustment! > 0) ...[
+                    const SizedBox(height: 6),
+                    _PriceRow('Fuel adjustment', _fmt(q.fuelAdjustment)),
+                  ],
+                  if (q.platformFee != null) ...[
+                    const SizedBox(height: 6),
+                    _PriceRow('Platform fee', _fmt(q.platformFee)),
+                  ],
+                  const SizedBox(height: 12),
+                  const Divider(color: AppColors.separator, thickness: 0.5),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Total',
+                          style: GoogleFonts.inter(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary)),
+                      Text(
+                        '₦${q.estimatedCost.toStringAsFixed(0)}',
+                        style: GoogleFonts.inter(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.accent),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
           // Payment method
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: AppColors.bgPrimary,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: AppColors.separator.withOpacity(0.3)),
+              border: Border.all(color: AppColors.separator.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [
                 Container(
                   width: 44,
                   height: 44,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentLight,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                      Icons.account_balance_wallet_outlined,
-                      color: AppColors.accent,
-                      size: 22),
+                  decoration: const BoxDecoration(
+                      color: AppColors.accentLight, shape: BoxShape.circle),
+                  child: const Icon(Icons.account_balance_wallet_outlined,
+                      color: AppColors.accent, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -779,14 +841,12 @@ class _StepReview extends StatelessWidget {
                     children: [
                       Text('TRAKA Wallet',
                           style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textPrimary,
-                          )),
-                      Text('Balance: ₦12,400',
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary)),
+                      Text('Payment via wallet',
                           style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: AppColors.success)),
+                              fontSize: 13, color: AppColors.textTertiary)),
                     ],
                   ),
                 ),
@@ -795,6 +855,7 @@ class _StepReview extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -871,4 +932,62 @@ class _PackageSize {
   final IconData icon;
   final String price;
   const _PackageSize(this.id, this.label, this.icon, this.price);
+}
+
+class _PriceLoader extends StatefulWidget {
+  const _PriceLoader();
+
+  @override
+  State<_PriceLoader> createState() => _PriceLoaderState();
+}
+
+class _PriceLoaderState extends State<_PriceLoader>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _bounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _bounce = Tween(begin: 0.0, end: -8.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: [
+          AnimatedBuilder(
+            animation: _bounce,
+            builder: (_, child) => Transform.translate(
+              offset: Offset(0, _bounce.value),
+              child: child,
+            ),
+            child: const Text('💰', style: TextStyle(fontSize: 28)),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Calculating price...',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppColors.textQuaternary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

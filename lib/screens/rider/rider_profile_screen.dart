@@ -160,12 +160,12 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                           horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
                         color: _isOnline
-                            ? AppColors.success.withOpacity(0.06)
+                            ? AppColors.success.withValues(alpha: 0.06)
                             : AppColors.bgPrimary,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: _isOnline
-                              ? AppColors.success.withOpacity(0.3)
+                              ? AppColors.success.withValues(alpha: 0.3)
                               : AppColors.separator,
                         ),
                       ),
@@ -208,10 +208,10 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                           Switch(
                             value: _isOnline,
                             onChanged: (v) => setState(() => _isOnline = v),
-                            activeColor: AppColors.success,
+                            activeThumbColor: AppColors.success,
                             trackColor: WidgetStateProperty.resolveWith(
                               (s) => s.contains(WidgetState.selected)
-                                  ? AppColors.success.withOpacity(0.3)
+                                  ? AppColors.success.withValues(alpha: 0.3)
                                   : AppColors.bgTertiary,
                             ),
                           ),
@@ -221,7 +221,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Account section
-                    _SectionLabel(label: 'Account'),
+                    const _SectionLabel(label: 'Account'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _Item(
@@ -243,7 +243,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Vehicle & Documents
-                    _SectionLabel(label: 'Rider Info'),
+                    const _SectionLabel(label: 'Rider Info'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _Item(
@@ -268,7 +268,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                     const SizedBox(height: 24),
 
                     // Support
-                    _SectionLabel(label: 'Support'),
+                    const _SectionLabel(label: 'Support'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _Item(
@@ -425,7 +425,7 @@ class _SettingsGroup extends StatelessWidget {
                 ),
               ),
               if (i < items.length - 1)
-                Divider(
+                const Divider(
                   height: 0.5,
                   thickness: 0.5,
                   color: AppColors.separator,

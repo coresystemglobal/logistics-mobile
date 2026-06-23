@@ -53,7 +53,7 @@ class WalletScreen extends StatelessWidget {
                             'Available Balance',
                             style: GoogleFonts.inter(
                               fontSize: 13,
-                              color: Colors.white.withOpacity(0.8),
+                              color: Colors.white.withValues(alpha: 0.8),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -108,7 +108,7 @@ class WalletScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     // Quick stats
-                    Row(
+                    const Row(
                       children: [
                         Expanded(
                           child: _WalletStat(
@@ -118,7 +118,7 @@ class WalletScreen extends StatelessWidget {
                             iconColor: AppColors.error,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: _WalletStat(
                             label: 'Total Funded',
@@ -272,7 +272,7 @@ class _TransactionRow extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: (isCredit ? AppColors.success : AppColors.error)
-                  .withOpacity(0.1),
+                  .withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

@@ -34,15 +34,19 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
     });
     try {
       final pkg = await _packageService.trackPackage(widget.trackingNumber);
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _package = pkg;
         _isLoading = false;
       });
+      }
     } catch (e) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
       });
+      }
     }
   }
 
@@ -456,7 +460,7 @@ class _TimelineItem extends StatelessWidget {
                 height: 44,
                 margin: const EdgeInsets.symmetric(vertical: 3),
                 color: step.isComplete
-                    ? AppColors.accent.withOpacity(0.3)
+                    ? AppColors.accent.withValues(alpha: 0.3)
                     : AppColors.separator,
               ),
           ],

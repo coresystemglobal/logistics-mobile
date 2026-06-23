@@ -260,7 +260,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Account section
-                    _SectionHeader(label: 'Account'),
+                    const _SectionHeader(label: 'Account'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _SettingsRow(
@@ -282,13 +282,13 @@ class CustomerProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Delivery section
-                    _SectionHeader(label: 'Delivery'),
+                    const _SectionHeader(label: 'Delivery'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _SettingsRow(
                         icon: Icons.import_contacts_rounded,
                         label: 'Address Book',
-                        onTap: () {},
+                        onTap: () => context.push('/customer/address-book'),
                       ),
                       _SettingsRow(
                         icon: Icons.inventory_2_rounded,
@@ -312,7 +312,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Payments section
-                    _SectionHeader(label: 'Payments'),
+                    const _SectionHeader(label: 'Payments'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _SettingsRow(
@@ -337,7 +337,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Legal & Support section
-                    _SectionHeader(label: 'Legal & Support'),
+                    const _SectionHeader(label: 'Legal & Support'),
                     const SizedBox(height: 8),
                     _SettingsGroup(items: [
                       _SettingsRow(
@@ -489,7 +489,7 @@ class _SettingsGroup extends StatelessWidget {
                 ),
               ),
               if (i < items.length - 1)
-                Divider(
+                const Divider(
                   height: 0.5,
                   thickness: 0.5,
                   color: AppColors.separator,
@@ -539,7 +539,7 @@ class _EditField extends StatelessWidget {
               fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 6),
-        TextField(
+        TextField(autocorrect: false, enableSuggestions: false, 
           controller: controller,
           keyboardType: keyboardType,
           style: GoogleFonts.inter(

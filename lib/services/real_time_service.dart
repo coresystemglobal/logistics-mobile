@@ -60,6 +60,14 @@ class RealTimeService {
     _socket?.emit('leave-package', packageId);
   }
 
+  void joinTracking(String packageId) {
+    _socket?.emit('join-tracking', packageId);
+  }
+
+  void leaveTracking(String packageId) {
+    _socket?.emit('leave-tracking', packageId);
+  }
+
   void sendMessage({required String packageId, required String content}) {
     _socket?.emit('send-message', {
       'packageId': packageId,

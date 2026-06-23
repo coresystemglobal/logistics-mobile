@@ -12,18 +12,18 @@ class ApiClient {
   late final Dio _refreshDio;
 
   ApiClient._internal() {
-    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000/api';
+    final baseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:4000/api';
 
     _refreshDio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
     ));
 
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 30),
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
       headers: {'Content-Type': 'application/json'},
     ));
 
@@ -57,7 +57,13 @@ class ApiClient {
   void _onError(DioException err, ErrorInterceptorHandler handler) async {
     debugPrint('[API ERROR] ${err.requestOptions.method} ${err.requestOptions.path} → ${err.response?.statusCode} ${err.message}');
 
-    if (err.response?.statusCode == 401) {
+    final statusCode = err.response?.statusCode;
+    final errorBody = err.response?.data;
+    final isInvalidToken = statusCode == 403 &&
+        errorBody is Map &&
+        (errorBody['error'] == 'Invalid token');
+
+    if (statusCode == 401 || isInvalidToken) {
       // Try token refresh
       try {
         final refreshed = await _tryRefreshToken();

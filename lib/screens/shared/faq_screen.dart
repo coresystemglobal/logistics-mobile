@@ -112,7 +112,7 @@ class _FaqScreenState extends State<FaqScreen> {
                                   ),
                                 ),
                                 Expanded(
-                                  child: TextField(
+                                  child: TextField(autocorrect: false, enableSuggestions: false, 
                                     controller: _searchController,
                                     style: GoogleFonts.inter(
                                       fontSize: 17,
@@ -430,7 +430,7 @@ class _FaqItem extends StatelessWidget {
           firstChild: const SizedBox(width: double.infinity),
           secondChild: Container(
             width: double.infinity,
-            color: AppColors.bgSecondary.withOpacity(0.5),
+            color: AppColors.bgSecondary.withValues(alpha: 0.5),
             padding:
                 const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Text(
@@ -448,7 +448,7 @@ class _FaqItem extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
         ),
         if (!isLast)
-          Divider(
+          const Divider(
             height: 1,
             thickness: 0.5,
             color: AppColors.separator,
@@ -496,7 +496,7 @@ class _SupportCard extends StatelessWidget {
             'Chat with our support team, 24/7',
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 20),

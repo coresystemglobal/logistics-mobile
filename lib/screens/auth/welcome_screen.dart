@@ -229,7 +229,7 @@ class _HeroArea extends StatelessWidget {
               width: 240,
               height: 240,
               decoration: BoxDecoration(
-                color: slide.iconBg.withOpacity(0.45),
+                color: slide.iconBg.withValues(alpha: 0.45),
                 shape: BoxShape.circle,
               ),
             ),

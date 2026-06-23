@@ -43,29 +43,53 @@ class DeliveryOffer {
 
 class QuoteModel {
   final String? id;
+  final String? quoteCode;
   final double estimatedCost;
   final double? distanceKm;
-  final String? vehicleType;
-  final String? estimatedDuration;
+  final String? currency;
+  final String? deliveryEta;
+  final double? baseFee;
+  final double? distanceFee;
+  final double? sizeFee;
+  final double? speedFee;
+  final double? fuelAdjustment;
   final double? platformFee;
 
   const QuoteModel({
     this.id,
+    this.quoteCode,
     required this.estimatedCost,
     this.distanceKm,
-    this.vehicleType,
-    this.estimatedDuration,
+    this.currency,
+    this.deliveryEta,
+    this.baseFee,
+    this.distanceFee,
+    this.sizeFee,
+    this.speedFee,
+    this.fuelAdjustment,
     this.platformFee,
   });
 
-  factory QuoteModel.fromJson(Map<String, dynamic> json) => QuoteModel(
-        id: json['id']?.toString(),
-        estimatedCost: (json['estimated_cost'] ?? json['estimatedCost'] ?? json['cost'] as num?)
-                ?.toDouble() ??
-            0.0,
-        distanceKm: (json['distance_km'] ?? json['distanceKm'] as num?)?.toDouble(),
-        vehicleType: json['vehicle_type'] ?? json['vehicleType'],
-        estimatedDuration: json['estimated_duration'] ?? json['estimatedDuration'],
-        platformFee: (json['platform_fee'] ?? json['platformFee'] as num?)?.toDouble(),
-      );
+  factory QuoteModel.fromJson(Map<String, dynamic> json) {
+    final breakdown = json['breakdown'] as Map<String, dynamic>?;
+    return QuoteModel(
+      id: json['id']?.toString(),
+      quoteCode: json['quote_code'] ?? json['quoteCode'],
+      estimatedCost: (json['estimated_price'] ??
+                  json['estimated_cost'] ??
+                  json['estimatedCost'] ??
+                  json['cost'] as num?)
+              ?.toDouble() ??
+          0.0,
+      distanceKm: (json['estimated_distance_km'] ?? json['distance_km'] ?? json['distanceKm'] as num?)?.toDouble(),
+      currency: json['currency'],
+      deliveryEta: json['delivery_eta'] ?? json['deliveryEta'],
+      baseFee: (breakdown?['base_fee'] as num?)?.toDouble(),
+      distanceFee: (breakdown?['distance_fee'] as num?)?.toDouble(),
+      sizeFee: (breakdown?['size_fee'] as num?)?.toDouble(),
+      speedFee: (breakdown?['speed_fee'] as num?)?.toDouble(),
+      fuelAdjustment: (breakdown?['fuel_adjustment'] as num?)?.toDouble(),
+      platformFee: (breakdown?['platform_fee'] as num?)?.toDouble(),
+    );
+  }
 }

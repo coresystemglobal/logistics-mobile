@@ -48,7 +48,7 @@ class _FundNotifier extends StateNotifier<_FundState> {
       state = state.copyWith(loading: false);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Redirecting to payment gateway...')),
+          const SnackBar(content: Text('Redirecting to payment gateway...')),
         );
       }
     } catch (e) {
@@ -136,7 +136,7 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                                   fontSize: 48, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                           const SizedBox(width: 4),
                           IntrinsicWidth(
-                            child: TextField(
+                            child: TextField(autocorrect: false, enableSuggestions: false, 
                               controller: _amountCtrl,
                               keyboardType: TextInputType.number,
                               textAlign: TextAlign.center,
@@ -238,7 +238,7 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.08),
+                          color: AppColors.error.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(state.error!,
@@ -256,8 +256,8 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         decoration: BoxDecoration(
-          color: AppColors.bgPrimary.withOpacity(0.95),
-          border: Border(top: BorderSide(color: AppColors.separator.withOpacity(0.4))),
+          color: AppColors.bgPrimary.withValues(alpha: 0.95),
+          border: Border(top: BorderSide(color: AppColors.separator.withValues(alpha: 0.4))),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -358,7 +358,7 @@ class _PaymentMethodCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.bgPrimary,
                 borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.separator.withOpacity(0.4)),
+                border: Border.all(color: AppColors.separator.withValues(alpha: 0.4)),
               ),
               child: Icon(icon, color: selected ? AppColors.accent : AppColors.textSecondary, size: 20),
             ),

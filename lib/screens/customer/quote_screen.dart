@@ -232,7 +232,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                                     Text('Weight (kg)',
                                         style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
                                     const SizedBox(height: 6),
-                                    TextField(
+                                    TextField(autocorrect: false, enableSuggestions: false, 
                                       controller: _weightCtrl,
                                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                       onChanged: (v) => notifier.setWeight(double.tryParse(v) ?? 2.5),
@@ -326,7 +326,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                                   gradient: LinearGradient(
                                     begin: Alignment.topCenter,
                                     end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, AppColors.bgSecondary.withOpacity(0.6)],
+                                    colors: [Colors.transparent, AppColors.bgSecondary.withValues(alpha: 0.6)],
                                   ),
                                 ),
                               ),
@@ -337,7 +337,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
+                                  color: Colors.white.withValues(alpha: 0.9),
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: const [BoxShadow(color: Color(0x1A000000), blurRadius: 8)],
                                 ),
@@ -366,7 +366,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.08),
+                          color: AppColors.error.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(state.error!,
@@ -385,7 +385,7 @@ class _QuoteScreenState extends ConsumerState<QuoteScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         decoration: BoxDecoration(
           color: AppColors.bgPrimary,
-          border: Border(top: BorderSide(color: AppColors.separator.withOpacity(0.5))),
+          border: Border(top: BorderSide(color: AppColors.separator.withValues(alpha: 0.5))),
         ),
         child: SizedBox(
           height: 56,
@@ -427,7 +427,7 @@ class _AddressField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextField(autocorrect: false, enableSuggestions: false, 
       controller: controller,
       onChanged: onChanged,
       style: GoogleFonts.inter(fontSize: 15, color: AppColors.textPrimary),
@@ -526,7 +526,7 @@ class _SpeedCard extends StatelessWidget {
             width: selected ? 1.5 : 1,
           ),
           boxShadow: selected
-              ? [BoxShadow(color: AppColors.accent.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: AppColors.accent.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 4))]
               : null,
         ),
         child: Column(
@@ -557,8 +557,8 @@ class _QuoteResult extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgPrimary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.accent.withOpacity(0.3)),
-        boxShadow: [BoxShadow(color: AppColors.accent.withOpacity(0.08), blurRadius: 16, offset: const Offset(0, 4))],
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
+        boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 0.08), blurRadius: 16, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

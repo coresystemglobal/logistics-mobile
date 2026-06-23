@@ -25,7 +25,7 @@ void main() {
     });
 
     test('toJson creates valid JSON', () {
-      final user = UserModel(
+      const user = UserModel(
         id: '123',
         email: 'test@example.com',
         role: 'USER',

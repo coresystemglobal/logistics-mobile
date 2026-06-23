@@ -103,7 +103,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                 Container(
                   width: 80,
                   height: 80,
-                  decoration: BoxDecoration(color: AppColors.success.withOpacity(0.1), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: AppColors.success.withValues(alpha: 0.1), shape: BoxShape.circle),
                   child: const Icon(Icons.check_rounded, color: AppColors.success, size: 44),
                 ),
                 const SizedBox(height: 20),
@@ -155,7 +155,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
+                        color: AppColors.success.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 48),
@@ -173,7 +173,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.12),
+                        color: AppColors.success.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -212,7 +212,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: AppColors.bgSecondary,
                               shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.accent.withOpacity(0.15), width: 2),
+                              border: Border.all(color: AppColors.accent.withValues(alpha: 0.15), width: 2),
                             ),
                             child: const Icon(Icons.person_rounded, size: 30, color: AppColors.textSecondary),
                           ),
@@ -293,7 +293,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                       const SizedBox(height: 16),
 
                       // Comment
-                      TextField(
+                      TextField(autocorrect: false, enableSuggestions: false, 
                         maxLines: 3,
                         onChanged: notifier.setComment,
                         style: GoogleFonts.inter(fontSize: 15, color: AppColors.textPrimary),
@@ -321,7 +321,7 @@ class DeliveryCompleteScreen extends ConsumerWidget {
                               : () => notifier.submit(packageId: packageId, riderId: riderId),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
-                            disabledBackgroundColor: AppColors.textQuaternary.withOpacity(0.5),
+                            disabledBackgroundColor: AppColors.textQuaternary.withValues(alpha: 0.5),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),

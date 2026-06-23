@@ -219,7 +219,7 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                           child: Icon(
                             Icons.inventory_2_outlined,
                             size: 130,
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                           ),
                         ),
                         Padding(
@@ -241,7 +241,7 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                                 text: TextSpan(
                                   style: GoogleFonts.inter(
                                     fontSize: 13,
-                                    color: Colors.white.withOpacity(0.7),
+                                    color: Colors.white.withValues(alpha: 0.7),
                                   ),
                                   children: const [
                                     TextSpan(text: 'Use code '),

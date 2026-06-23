@@ -151,7 +151,7 @@ class _BulkShipmentScreenState extends ConsumerState<BulkShipmentScreen> {
                 children: List.generate(steps.length * 2 - 1, (i) {
                   if (i.isOdd) {
                     return Expanded(
-                      child: Container(height: 1.5, color: AppColors.separator.withOpacity(0.5)),
+                      child: Container(height: 1.5, color: AppColors.separator.withValues(alpha: 0.5)),
                     );
                   }
                   final stepIndex = i ~/ 2;
@@ -184,7 +184,7 @@ class _BulkShipmentScreenState extends ConsumerState<BulkShipmentScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.bgPrimary,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.separator.withOpacity(0.4)),
+                        border: Border.all(color: AppColors.separator.withValues(alpha: 0.4)),
                         boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2))],
                       ),
                       child: Column(
@@ -212,12 +212,12 @@ class _BulkShipmentScreenState extends ConsumerState<BulkShipmentScreen> {
                           const SizedBox(height: 12),
                           Row(
                             children: [
-                              Expanded(child: Divider(color: AppColors.separator.withOpacity(0.5))),
+                              Expanded(child: Divider(color: AppColors.separator.withValues(alpha: 0.5))),
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 12),
                                 child: Text('or', style: GoogleFonts.inter(fontSize: 12, color: AppColors.textQuaternary)),
                               ),
-                              Expanded(child: Divider(color: AppColors.separator.withOpacity(0.5))),
+                              Expanded(child: Divider(color: AppColors.separator.withValues(alpha: 0.5))),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -317,7 +317,7 @@ class _BulkShipmentScreenState extends ConsumerState<BulkShipmentScreen> {
                         height: 56,
                         margin: const EdgeInsets.only(top: 8),
                         decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.accent.withOpacity(0.4), width: 2, style: BorderStyle.solid),
+                          border: Border.all(color: AppColors.accent.withValues(alpha: 0.4), width: 2, style: BorderStyle.solid),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -343,7 +343,7 @@ class _BulkShipmentScreenState extends ConsumerState<BulkShipmentScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
         decoration: BoxDecoration(
           color: AppColors.bgPrimary,
-          border: Border(top: BorderSide(color: AppColors.separator.withOpacity(0.4))),
+          border: Border(top: BorderSide(color: AppColors.separator.withValues(alpha: 0.4))),
         ),
         child: Row(
           children: [
@@ -406,7 +406,7 @@ class _FormField extends StatelessWidget {
       children: [
         Text(label, style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(height: 4),
-        TextField(
+        TextField(autocorrect: false, enableSuggestions: false, 
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
@@ -444,7 +444,7 @@ class _RecipientTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgPrimary,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.separator.withOpacity(0.3)),
+        border: Border.all(color: AppColors.separator.withValues(alpha: 0.3)),
         boxShadow: const [BoxShadow(color: Color(0x08000000), blurRadius: 6, offset: Offset(0, 2))],
       ),
       child: Row(
@@ -452,7 +452,7 @@ class _RecipientTile extends StatelessWidget {
           Container(
             width: 32,
             height: 32,
-            decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
             child: Center(
               child: Text(recipient.initials,
                   style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w700, color: color)),

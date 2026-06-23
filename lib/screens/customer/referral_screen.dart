@@ -432,7 +432,7 @@ class _HowItWorksStep extends StatelessWidget {
             Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.accentLight,
                 shape: BoxShape.circle,
               ),

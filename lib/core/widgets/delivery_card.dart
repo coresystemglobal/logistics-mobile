@@ -61,7 +61,7 @@ class DeliveryCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: _statusColor.withOpacity(0.1),
+                color: _statusColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(_statusIcon, color: _statusColor, size: 20),

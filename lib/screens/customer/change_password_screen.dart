@@ -254,7 +254,7 @@ class _PasswordField extends StatelessWidget {
               fontSize: 13, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 6),
-        TextField(
+        TextField(autocorrect: false, enableSuggestions: false, 
           controller: controller,
           obscureText: !show,
           style: GoogleFonts.inter(

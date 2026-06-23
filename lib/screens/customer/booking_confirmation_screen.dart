@@ -6,10 +6,11 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
-  final String trackingNumber;
+  final String? trackingNumber;
+  final String? packageId;
 
   const BookingConfirmationScreen(
-      {super.key, required this.trackingNumber});
+      {super.key, this.trackingNumber, this.packageId});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.12),
+                    color: AppColors.success.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -63,7 +64,7 @@ class BookingConfirmationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 36),
               // Tracking number card
-              Container(
+              if (trackingNumber != null) Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.bgSecondary,
@@ -83,7 +84,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          trackingNumber,
+                          trackingNumber!,
                           style: GoogleFonts.inter(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -95,7 +96,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             Clipboard.setData(
-                                ClipboardData(text: trackingNumber));
+                                ClipboardData(text: trackingNumber!));
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Copied to clipboard'),
@@ -113,9 +114,10 @@ class BookingConfirmationScreen extends StatelessWidget {
               ),
               const Spacer(),
               TrakaButton(
-                label: 'Track My Package',
-                onPressed: () =>
-                    context.go('/customer/track/$trackingNumber'),
+                label: 'Proceed to Payment',
+                onPressed: packageId != null
+                    ? () => context.go('/customer/payment/$packageId')
+                    : null,
               ),
               const SizedBox(height: 14),
               TrakaButton(

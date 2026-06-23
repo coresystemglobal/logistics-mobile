@@ -321,7 +321,7 @@ class _InvoiceTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.bgPrimary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.separator.withOpacity(0.15)),
+        border: Border.all(color: AppColors.separator.withValues(alpha: 0.15)),
         boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 8, offset: Offset(0, 2))],
       ),
       child: Row(
@@ -381,12 +381,12 @@ class _InvoiceTile extends StatelessWidget {
 
   (Color, IconData, Color, Color) _statusStyle() {
     if (invoice.isPaid) {
-      return (AppColors.success, Icons.check_circle_rounded, const Color(0xFFE8F5E9), AppColors.success.withOpacity(0.12));
+      return (AppColors.success, Icons.check_circle_rounded, const Color(0xFFE8F5E9), AppColors.success.withValues(alpha: 0.12));
     }
     if (invoice.isOverdue) {
-      return (AppColors.error, Icons.receipt_long_rounded, const Color(0xFFFFEBEE), AppColors.error.withOpacity(0.12));
+      return (AppColors.error, Icons.receipt_long_rounded, const Color(0xFFFFEBEE), AppColors.error.withValues(alpha: 0.12));
     }
-    return (AppColors.warning, Icons.schedule_rounded, AppColors.accentLight, AppColors.warning.withOpacity(0.12));
+    return (AppColors.warning, Icons.schedule_rounded, AppColors.accentLight, AppColors.warning.withValues(alpha: 0.12));
   }
 
   String _periodText() {

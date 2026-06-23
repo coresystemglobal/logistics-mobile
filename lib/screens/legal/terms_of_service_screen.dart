@@ -39,61 +39,61 @@ class TermsOfServiceScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _Section(
+            const _Section(
               number: '1',
               title: 'Acceptance of Terms',
               body:
                   'By creating an account or using the TRAKA platform, you confirm that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, you may not use our services.',
             ),
-            _Section(
+            const _Section(
               number: '2',
               title: 'Description of Service',
               body:
                   'TRAKA is a logistics and package-tracking platform that connects senders (customers and businesses) with delivery riders. We provide tools for booking deliveries, tracking packages in real time, managing fleets, and processing payments.\n\nWe reserve the right to modify, suspend, or discontinue any part of the service at any time with reasonable notice.',
             ),
-            _Section(
+            const _Section(
               number: '3',
               title: 'User Accounts',
               body:
                   'You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must notify us immediately of any unauthorized use.\n\nYou must provide accurate, current, and complete information during registration and keep it up to date.',
             ),
-            _Section(
+            const _Section(
               number: '4',
               title: 'User Responsibilities',
               body:
                   'You agree not to:\n\n• Use the platform for any unlawful purpose.\n• Transmit prohibited, hazardous, or illegal items through our delivery network.\n• Misrepresent the contents, value, or nature of packages.\n• Interfere with or disrupt the platform or servers.\n• Attempt to gain unauthorized access to any part of the service.',
             ),
-            _Section(
+            const _Section(
               number: '5',
               title: 'Payments and Fees',
               body:
                   'All fees are displayed before you confirm a booking. By confirming, you authorize us to charge the stated amount. Fees are non-refundable except as outlined in our Refund Policy.',
             ),
-            _Section(
+            const _Section(
               number: '6',
               title: 'Privacy Policy',
               body:
                   'Your use of TRAKA is also governed by our Privacy Policy, which describes how we collect, use, and protect your personal information.',
             ),
-            _Section(
+            const _Section(
               number: '7',
               title: 'Limitation of Liability',
               body:
                   'To the fullest extent permitted by law, TRAKA shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.\n\nOur total liability shall not exceed the amount you paid us in the twelve months preceding the claim.',
             ),
-            _Section(
+            const _Section(
               number: '8',
               title: 'Governing Law',
               body:
                   'These Terms shall be governed by the laws of the Federal Republic of Nigeria.',
             ),
-            _Section(
+            const _Section(
               number: '9',
               title: 'Changes to Terms',
               body:
                   'We may update these Terms from time to time. We will notify you of significant changes by email or by posting a prominent notice in the app.',
             ),
-            _Section(
+            const _Section(
               number: '10',
               title: 'Contact Us',
               body: 'If you have questions about these Terms, please contact us at support@traka.ng.',

@@ -60,7 +60,7 @@ class _TrakaBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      color: AppColors.bgPrimary.withOpacity(0.92),
+      color: AppColors.bgPrimary.withValues(alpha: 0.92),
       elevation: 0,
       notchMargin: 8,
       shape: const CircularNotchedRectangle(),
@@ -179,7 +179,7 @@ class _BookFab extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accent.withOpacity(0.35),
+                  color: AppColors.accent.withValues(alpha: 0.35),
                   blurRadius: 16,
                   offset: const Offset(0, 4),
                 ),

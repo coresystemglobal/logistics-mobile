@@ -64,7 +64,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.accent.withOpacity(0.05),
+                color: AppColors.accent.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -76,7 +76,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.iosBlue.withOpacity(0.04),
+                color: AppColors.iosBlue.withValues(alpha: 0.04),
               ),
             ),
           ),

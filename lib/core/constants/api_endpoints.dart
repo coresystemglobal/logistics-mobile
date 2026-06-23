@@ -22,6 +22,7 @@ class ApiEndpoints {
   static String cancelPackage(String id) => '/packages/$id/cancel';
   static String claimPackage(String trackingNumber) =>
       '/packages/$trackingNumber/claim';
+  static String packageById(String id) => '/packages/by-id/$id';
 
   // Riders
   static const String riderJobs = '/riders/jobs';
@@ -38,7 +39,7 @@ class ApiEndpoints {
       '/matching/couriers/$courierId/status';
   static String courierState(String courierId) =>
       '/matching/couriers/$courierId/state';
-  static const String findCouriers = '/matching/find-couriers';
+  static const String findCouriers = '/matching/find-couriers/by-address';
   static const String requestDelivery = '/matching/request-delivery';
   static String acceptOffer(String courierId, String requestId) =>
       '/matching/offers/$courierId/$requestId/accept';
@@ -53,6 +54,7 @@ class ApiEndpoints {
   static const String walletTransactions = '/wallet/transactions';
   static const String walletFundInitialize = '/wallet/fund/initialize';
   static const String walletFundVerify = '/wallet/fund/verify';
+  static const String walletPayForDelivery = '/wallet/pay-for-delivery';
 
   // Notifications
   static const String notifications = '/notifications';

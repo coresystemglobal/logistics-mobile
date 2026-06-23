@@ -216,7 +216,7 @@ class _BusinessDashboardScreenState
                     const SizedBox(height: 12),
 
                     // Delivery cards
-                    _DeliveryListItem(
+                    const _DeliveryListItem(
                       trackingNumber: 'TRK-88293-NG',
                       recipient: 'Chioma Okafor',
                       statusLabel: 'In Transit',
@@ -225,7 +225,7 @@ class _BusinessDashboardScreenState
                       detailIcon: Icons.schedule_rounded,
                     ),
                     const SizedBox(height: 12),
-                    _DeliveryListItem(
+                    const _DeliveryListItem(
                       trackingNumber: 'TRK-90122-NG',
                       recipient: 'Daniel Abiodun',
                       statusLabel: 'Processing',
@@ -234,7 +234,7 @@ class _BusinessDashboardScreenState
                       detailIcon: Icons.location_on_rounded,
                     ),
                     const SizedBox(height: 12),
-                    _DeliveryListItem(
+                    const _DeliveryListItem(
                       trackingNumber: 'TRK-44512-NG',
                       recipient: 'Zenith Bank HQ',
                       statusLabel: 'Arriving',
@@ -295,7 +295,7 @@ class _StickyHeader extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppColors.surface.withOpacity(0.95),
+      color: AppColors.surface.withValues(alpha: 0.95),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
@@ -340,7 +340,7 @@ class _StickyHeader extends SliverPersistentHeaderDelegate {
               color: AppColors.accentLight,
               shape: BoxShape.circle,
               border: Border.all(
-                  color: AppColors.separator.withOpacity(0.5)),
+                  color: AppColors.separator.withValues(alpha: 0.5)),
             ),
             alignment: Alignment.center,
             child: Text(
@@ -474,7 +474,7 @@ class _WeeklyChart extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(height: 1, color: AppColors.separator),
           const SizedBox(height: 12),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _ChartLegend(color: AppColors.success, label: 'Delivered'),
@@ -517,7 +517,7 @@ class _BarItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isToday
                       ? AppColors.accent
-                      : AppColors.accent.withOpacity(0.3),
+                      : AppColors.accent.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -586,10 +586,10 @@ class _QuickAction extends StatelessWidget {
           Container(
             width: 56,
             height: 56,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.bgPrimary,
               shape: BoxShape.circle,
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
                   color: Color(0x0D000000),
                   blurRadius: 12,
@@ -694,7 +694,7 @@ class _DeliveryListItem extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -712,7 +712,7 @@ class _DeliveryListItem extends StatelessWidget {
           const SizedBox(height: 12),
           Divider(
             height: 1,
-            color: AppColors.separator.withOpacity(0.4),
+            color: AppColors.separator.withValues(alpha: 0.4),
           ),
           const SizedBox(height: 12),
           Row(

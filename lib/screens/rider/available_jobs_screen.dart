@@ -66,7 +66,7 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.1),
+                      color: AppColors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Row(
@@ -118,7 +118,7 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                           width: 64,
                           height: 64,
                           decoration: BoxDecoration(
-                            color: AppColors.error.withOpacity(0.1),
+                            color: AppColors.error.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.error_outline_rounded,
@@ -156,7 +156,7 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                             child: Container(
                               width: 80,
                               height: 80,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: AppColors.accentLight,
                                 shape: BoxShape.circle,
                               ),
@@ -352,7 +352,7 @@ class _JobCard extends StatelessWidget {
           Divider(
             height: 1,
             thickness: 0.5,
-            color: AppColors.separator.withOpacity(0.4),
+            color: AppColors.separator.withValues(alpha: 0.4),
           ),
 
           // Buttons
@@ -367,7 +367,7 @@ class _JobCard extends StatelessWidget {
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textSecondary,
-                        side: BorderSide(color: AppColors.separator),
+                        side: const BorderSide(color: AppColors.separator),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

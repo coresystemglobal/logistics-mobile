@@ -22,15 +22,13 @@ class AuthState {
         user = null,
         error = null;
 
-  const AuthState.authenticated(UserModel user)
+  const AuthState.authenticated(UserModel this.user)
       : status = AuthStatus.authenticated,
-        user = user,
         error = null;
 
-  const AuthState.unauthenticated([String? error])
+  const AuthState.unauthenticated([this.error])
       : status = AuthStatus.unauthenticated,
-        user = null,
-        error = error;
+        user = null;
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isRider => user?.isRider ?? false;

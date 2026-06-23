@@ -52,7 +52,7 @@ class EarningsScreen extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.accent.withOpacity(0.35),
+                                color: AppColors.accent.withValues(alpha: 0.35),
                                 blurRadius: 24,
                                 offset: const Offset(0, 10),
                               ),
@@ -65,7 +65,7 @@ class EarningsScreen extends ConsumerWidget {
                                 'Current Balance',
                                 style: GoogleFonts.inter(
                                   fontSize: 13,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -106,7 +106,7 @@ class EarningsScreen extends ConsumerWidget {
                         const SizedBox(height: 20),
 
                         // Stats row
-                        Row(
+                        const Row(
                           children: [
                             Expanded(
                               child: _StatCard(
@@ -116,7 +116,7 @@ class EarningsScreen extends ConsumerWidget {
                                 iconColor: AppColors.iosBlue,
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12),
                             Expanded(
                               child: _StatCard(
                                 label: 'Total\nEarned',
@@ -323,8 +323,8 @@ class _EarningRow extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: data.isDebit
-                  ? AppColors.error.withOpacity(0.1)
-                  : AppColors.success.withOpacity(0.1),
+                  ? AppColors.error.withValues(alpha: 0.1)
+                  : AppColors.success.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

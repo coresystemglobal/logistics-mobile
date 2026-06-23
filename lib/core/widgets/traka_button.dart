@@ -63,7 +63,7 @@ class TrakaButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.accent,
             foregroundColor: Colors.white,
-            disabledBackgroundColor: AppColors.accent.withOpacity(0.5),
+            disabledBackgroundColor: AppColors.accent.withValues(alpha: 0.5),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             elevation: 0,

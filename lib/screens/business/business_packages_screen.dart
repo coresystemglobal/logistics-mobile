@@ -122,9 +122,9 @@ class _BusinessPackagesScreenState extends State<BusinessPackagesScreen> {
                           ),
                         ),
                         const Spacer(),
-                        _IconBtn(icon: Icons.filter_list_rounded),
+                        const _IconBtn(icon: Icons.filter_list_rounded),
                         const SizedBox(width: 8),
-                        _IconBtn(icon: Icons.ios_share_rounded),
+                        const _IconBtn(icon: Icons.ios_share_rounded),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -137,7 +137,7 @@ class _BusinessPackagesScreenState extends State<BusinessPackagesScreen> {
                         color: AppColors.bgPrimary,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: AppColors.separator.withOpacity(0.5)),
+                            color: AppColors.separator.withValues(alpha: 0.5)),
                       ),
                       child: Row(
                         children: [
@@ -218,17 +218,17 @@ class _BusinessPackagesScreenState extends State<BusinessPackagesScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _StatChip(
+                          const _StatChip(
                               dot: AppColors.textPrimary,
                               label: '124 Total'),
                           _VDivider(),
-                          _StatChip(
+                          const _StatChip(
                               dot: AppColors.success, label: '89 Delivered'),
                           _VDivider(),
-                          _StatChip(
+                          const _StatChip(
                               dot: AppColors.iosBlue, label: '12 Active'),
                           _VDivider(),
-                          _StatChip(
+                          const _StatChip(
                               dot: AppColors.warning, label: '23 Pending'),
                         ],
                       ),
@@ -270,7 +270,7 @@ class _BusinessPackagesScreenState extends State<BusinessPackagesScreen> {
                                     height: 0.5,
                                     thickness: 0.5,
                                     color: AppColors.separator
-                                        .withOpacity(0.5),
+                                        .withValues(alpha: 0.5),
                                     indent: 16,
                                     endIndent: 16,
                                   ),
@@ -439,7 +439,7 @@ class _ShipmentRow extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 3),
                   decoration: BoxDecoration(
-                    color: _statusColor.withOpacity(0.1),
+                    color: _statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(

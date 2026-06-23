@@ -92,7 +92,7 @@ class _PackageChatScreenState extends ConsumerState<PackageChatScreen> {
                         Container(
                           width: 64,
                           height: 64,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.accentLight,
                             shape: BoxShape.circle,
                           ),
@@ -173,10 +173,10 @@ class _ChatHeader extends StatelessWidget {
             // Rider avatar + info
             Stack(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 16,
                   backgroundColor: AppColors.bgTertiary,
-                  child: const Icon(Icons.person_rounded,
+                  child: Icon(Icons.person_rounded,
                       color: AppColors.textTertiary, size: 18),
                 ),
                 Positioned(
@@ -241,7 +241,7 @@ class _ContextCard extends StatelessWidget {
         ? 'TRK-${packageId.substring(0, 8).toUpperCase()}'
         : packageId;
     return Container(
-      color: AppColors.bgSecondary.withOpacity(0.9),
+      color: AppColors.bgSecondary.withValues(alpha: 0.9),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Container(
         height: 60,
@@ -250,7 +250,7 @@ class _ContextCard extends StatelessWidget {
           color: AppColors.bgPrimary,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.separator.withOpacity(0.3),
+            color: AppColors.separator.withValues(alpha: 0.3),
           ),
           boxShadow: const [
             BoxShadow(
@@ -505,7 +505,7 @@ class _InputBar extends StatelessWidget {
         child: Row(
           children: [
             // Attach
-            Icon(
+            const Icon(
               Icons.attach_file_rounded,
               color: AppColors.textSecondary,
               size: 24,
@@ -520,7 +520,7 @@ class _InputBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 alignment: Alignment.center,
-                child: TextField(
+                child: TextField(autocorrect: false, enableSuggestions: false, 
                   controller: controller,
                   style: GoogleFonts.inter(
                     fontSize: 16,

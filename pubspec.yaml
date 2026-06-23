@@ -25,7 +25,8 @@ dependencies:
   shared_preferences: ^2.2.3
 
   # Maps
-  google_maps_flutter: ^2.6.0
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
 
   # WebSockets (Socket.IO)
   socket_io_client: ^2.0.3+1

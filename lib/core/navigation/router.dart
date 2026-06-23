@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../screens/auth/splash_screen.dart';
 import '../../screens/auth/welcome_screen.dart';
@@ -43,6 +42,9 @@ import '../../screens/customer/delivery_complete_screen.dart';
 import '../../screens/customer/transaction_history_screen.dart';
 import '../../screens/customer/change_password_screen.dart';
 import '../../screens/customer/referral_screen.dart';
+import '../../screens/customer/address_book_screen.dart';
+import '../../screens/customer/payment_screen.dart';
+import '../../screens/customer/finding_rider_screen.dart';
 import '../../screens/legal/terms_of_service_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -52,8 +54,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     debugLogDiagnostics: true,
     redirect: (BuildContext context, GoRouterState state) {
       final status = authState.status;
-      final isAuthRoute = state.matchedLocation.startsWith('/auth') ||
-          state.matchedLocation == '/';
+      final location = state.uri.path;
+      final isAuthRoute = location.startsWith('/auth') || location == '/';
 
       if (status == AuthStatus.unknown) return '/';
 
@@ -110,9 +112,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Customer routes outside shell
       GoRoute(path: '/customer/book', builder: (_, __) => const BookDeliveryScreen()),
       GoRoute(
-        path: '/customer/booking-confirm/:trackingNumber',
+        path: '/customer/booking-confirm/:packageId',
         builder: (context, state) => BookingConfirmationScreen(
-          trackingNumber: state.pathParameters['trackingNumber']!,
+          packageId: state.pathParameters['packageId'],
+          trackingNumber: state.uri.queryParameters['trackingNumber'],
         ),
       ),
       GoRoute(
@@ -127,10 +130,23 @@ final routerProvider = Provider<GoRouter>((ref) {
           packageId: state.pathParameters['packageId']!,
         ),
       ),
+      GoRoute(
+        path: '/customer/payment/:packageId',
+        builder: (context, state) => PaymentScreen(
+          packageId: state.pathParameters['packageId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/customer/finding-rider/:packageId',
+        builder: (context, state) => FindingRiderScreen(
+          packageId: state.pathParameters['packageId']!,
+        ),
+      ),
       GoRoute(path: '/customer/fund-wallet', builder: (_, __) => const FundWalletScreen()),
       GoRoute(path: '/customer/transactions', builder: (_, __) => const TransactionHistoryScreen()),
       GoRoute(path: '/customer/change-password', builder: (_, __) => const ChangePasswordScreen()),
       GoRoute(path: '/customer/referral', builder: (_, __) => const ReferralScreen()),
+      GoRoute(path: '/customer/address-book', builder: (_, __) => const AddressBookScreen()),
       GoRoute(path: '/customer/quote', builder: (_, __) => const QuoteScreen()),
       GoRoute(
         path: '/customer/transaction/:id',

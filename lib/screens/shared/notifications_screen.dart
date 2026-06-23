@@ -236,15 +236,15 @@ class _NotificationList extends StatelessWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       children: [
         if (today.isNotEmpty) ...[
-          _GroupHeader(label: 'Today'),
+          const _GroupHeader(label: 'Today'),
           ...today.map((n) => _NotificationTile(notification: n)),
         ],
         if (yesterday.isNotEmpty) ...[
-          _GroupHeader(label: 'Yesterday'),
+          const _GroupHeader(label: 'Yesterday'),
           ...yesterday.map((n) => _NotificationTile(notification: n)),
         ],
         if (earlier.isNotEmpty) ...[
-          _GroupHeader(label: 'Earlier'),
+          const _GroupHeader(label: 'Earlier'),
           ...earlier.map((n) => _NotificationTile(notification: n)),
         ],
         const SizedBox(height: 32),
@@ -342,7 +342,7 @@ class _NotificationTile extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: _iconColor.withOpacity(0.1),
+                      color: _iconColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(_icon, color: _iconColor, size: 20),
@@ -404,7 +404,7 @@ class _NotificationTile extends StatelessWidget {
               child: Divider(
                 height: 0.5,
                 thickness: 0.5,
-                color: AppColors.separator.withOpacity(0.4),
+                color: AppColors.separator.withValues(alpha: 0.4),
               ),
             ),
           ],

@@ -98,7 +98,7 @@ class RatingsScreen extends ConsumerWidget {
                         Container(
                           width: 72,
                           height: 72,
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: AppColors.bgSecondary,
                             shape: BoxShape.circle,
                           ),

@@ -1,9 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../core/api/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/package_service.dart';
 import '../../models/package_model.dart';
 
@@ -12,8 +17,7 @@ class ActiveDeliveryScreen extends ConsumerStatefulWidget {
   const ActiveDeliveryScreen({super.key, required this.packageId});
 
   @override
-  ConsumerState<ActiveDeliveryScreen> createState() =>
-      _ActiveDeliveryScreenState();
+  ConsumerState<ActiveDeliveryScreen> createState() => _ActiveDeliveryScreenState();
 }
 
 class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
@@ -21,29 +25,67 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen> {
   bool _isLoading = true;
   String? _error;
 
+  Timer? _locationTimer;
+  bool _locationPermissionGranted = false;
+
   @override
   void initState() {
     super.initState();
     _loadPackage();
+    _startLocationReporting();
   }
 
   Future<void> _loadPackage() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    setState(() { _isLoading = true; _error = null; });
     try {
       final pkg = await PackageService().getPackageById(widget.packageId);
-      if (mounted) setState(() {
-        _package = pkg;
-        _isLoading = false;
-      });
+      if (mounted) setState(() { _package = pkg; _isLoading = false; });
     } catch (e) {
-      if (mounted) setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) setState(() { _error = e.toString(); _isLoading = false; });
     }
+  }
+
+  Future<void> _startLocationReporting() async {
+    // Request location permission
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+    if (permission == LocationPermission.deniedForever ||
+        permission == LocationPermission.denied) {
+      return;
+    }
+
+    _locationPermissionGranted = true;
+
+    // Send location immediately, then every 5 seconds while this screen is active
+    await _reportLocation();
+    _locationTimer = Timer.periodic(const Duration(seconds: 5), (_) => _reportLocation());
+  }
+
+  Future<void> _reportLocation() async {
+    if (!_locationPermissionGranted) return;
+    final userId = ref.read(authProvider).user?.id;
+    if (userId == null) return;
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 4),
+      );
+      await ApiClient.instance.put(
+        ApiEndpoints.courierLocation(userId),
+        data: {'lat': position.latitude, 'lng': position.longitude},
+      );
+    } catch (_) {
+      // Non-fatal — next tick will retry
+    }
+  }
+
+  @override
+  void dispose() {
+    _locationTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -90,7 +132,7 @@ class _ErrorView extends StatelessWidget {
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        color: AppColors.error.withOpacity(0.1),
+                        color: AppColors.error.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.error_outline_rounded,
@@ -145,10 +187,10 @@ class _DeliveryView extends StatelessWidget {
                       Container(
                         width: 64,
                         height: 64,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.bgPrimary,
                           shape: BoxShape.circle,
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
                               color: Color(0x1A000000),
                               blurRadius: 16,
@@ -174,21 +216,18 @@ class _DeliveryView extends StatelessWidget {
                   ),
                 ),
               ),
-              // Safe area + back button
+              // Safe area + back button + chat
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Row(
                     children: [
                       Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.bgPrimary,
                           shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x14000000),
-                              blurRadius: 8,
-                            ),
+                          boxShadow: [
+                            BoxShadow(color: Color(0x14000000), blurRadius: 8),
                           ],
                         ),
                         child: IconButton(
@@ -199,14 +238,11 @@ class _DeliveryView extends StatelessWidget {
                       ),
                       const Spacer(),
                       Container(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: AppColors.bgPrimary,
                           shape: BoxShape.circle,
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Color(0x14000000),
-                              blurRadius: 8,
-                            ),
+                          boxShadow: [
+                            BoxShadow(color: Color(0x14000000), blurRadius: 8),
                           ],
                         ),
                         child: IconButton(
@@ -226,9 +262,8 @@ class _DeliveryView extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 8),
-                  color: AppColors.bgSecondary.withOpacity(0.9),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: AppColors.bgSecondary.withValues(alpha: 0.9),
                   child: Row(
                     children: [
                       Container(
@@ -277,7 +312,6 @@ class _DeliveryView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Route
                 _RouteRow(
                   icon: Icons.radio_button_checked,
                   iconColor: AppColors.accent,
@@ -293,23 +327,14 @@ class _DeliveryView extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Action button
                 if (package.status == 'PENDING')
-                  TrakaButton(
-                    label: 'Arrived at Pickup',
-                    onPressed: () {},
-                  )
+                  TrakaButton(label: 'Arrived at Pickup', onPressed: () {})
                 else if (package.status == 'PICKED_UP' ||
                     package.status == 'IN_TRANSIT')
-                  TrakaButton(
-                    label: 'Submit Proof of Delivery',
-                    onPressed: () {},
-                  )
+                  TrakaButton(label: 'Submit Proof of Delivery', onPressed: () {})
                 else
-                  TrakaButton(
-                    label: 'Return to Jobs',
-                    onPressed: () => context.pop(),
-                  ),
+                  TrakaButton(label: 'Return to Jobs', onPressed: () => context.pop()),
+
                 const SizedBox(height: 16),
               ],
             ),
@@ -342,24 +367,20 @@ class _RouteRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textQuaternary,
-                  letterSpacing: 0.5,
-                ),
-              ),
+              Text(label,
+                  style: GoogleFonts.inter(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textQuaternary,
+                    letterSpacing: 0.5,
+                  )),
               const SizedBox(height: 2),
-              Text(
-                address,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
+              Text(address,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  )),
             ],
           ),
         ),
@@ -375,11 +396,7 @@ class _RouteLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 8, top: 4, bottom: 4),
-      child: Container(
-        width: 2,
-        height: 24,
-        color: AppColors.separator,
-      ),
+      child: Container(width: 2, height: 24, color: AppColors.separator),
     );
   }
 }

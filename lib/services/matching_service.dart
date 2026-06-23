@@ -15,7 +15,7 @@ class MatchingService {
       'delivery_address': deliveryAddress,
       if (weight != null) 'weight': weight,
     });
-    final list = response['couriers'] ?? response['data'] ?? [];
+    final list = response['matches'] ?? response['data'] ?? [];
     return (list as List).cast<Map<String, dynamic>>();
   }
 
@@ -52,14 +52,16 @@ class MatchingService {
   Future<QuoteModel> getQuote({
     required String pickupAddress,
     required String deliveryAddress,
+    String packageSize = 'SMALL',
+    String deliverySpeed = 'STANDARD',
     double? weight,
-    String? vehicleType,
   }) async {
     final response = await _api.post(ApiEndpoints.quotes, data: {
       'pickup_address': pickupAddress,
       'delivery_address': deliveryAddress,
+      'package_size': packageSize,
+      'delivery_speed': deliverySpeed,
       if (weight != null) 'weight': weight,
-      if (vehicleType != null) 'vehicle_type': vehicleType,
     });
     final data = response['quote'] ?? response['data'] ?? response;
     return QuoteModel.fromJson(data as Map<String, dynamic>);
