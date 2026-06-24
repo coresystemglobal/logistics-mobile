@@ -276,7 +276,7 @@ class _DeliveryView extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        package.trackingNumber,
+                        package.trackingNumber ?? '',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,

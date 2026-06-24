@@ -163,7 +163,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: DeliveryCard(
-                          trackingNumber: pkg.trackingNumber,
+                          trackingNumber: pkg.trackingNumber ?? '',
                           recipientName: pkg.deliveryAddress,
                           status: pkg.status.toLowerCase(),
                           subtitle: pkg.createdAt != null

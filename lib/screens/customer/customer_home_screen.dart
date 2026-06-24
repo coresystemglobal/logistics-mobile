@@ -365,11 +365,11 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: DeliveryCard(
-                          trackingNumber: pkg.trackingNumber,
+                          trackingNumber: pkg.trackingNumber ?? '',
                           recipientName: pkg.deliveryAddress,
                           status: pkg.status.toLowerCase(),
                           onTap: () => context.push(
-                              '/customer/track/${pkg.trackingNumber}'),
+                              '/customer/track/${pkg.trackingNumber ?? pkg.id}'),
                         ),
                       );
                     },

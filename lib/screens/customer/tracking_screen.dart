@@ -174,7 +174,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              pkg.trackingNumber,
+                              pkg.trackingNumber ?? '',
                               style: GoogleFonts.inter(
                                 fontSize: 14,
                                 color: AppColors.textTertiary,
