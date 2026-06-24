@@ -20,6 +20,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   final _packageService = PackageService();
   PackageModel? _package;
+  double? _walletBalance;
   bool _loading = true;
   bool _paying = false;
   String _selectedMethod = 'wallet';
@@ -27,19 +28,50 @@ class _PaymentScreenState extends State<PaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPackage();
+    _loadData();
   }
 
-  Future<void> _loadPackage() async {
+  Future<void> _loadData() async {
     try {
-      final pkg = await _packageService.getPackageById(widget.packageId);
-      if (mounted) setState(() { _package = pkg; _loading = false; });
+      final results = await Future.wait([
+        _packageService.getPackageById(widget.packageId),
+        ApiClient.instance.get(ApiEndpoints.walletBalance),
+      ]);
+      if (mounted) {
+        setState(() {
+          _package = results[0] as PackageModel;
+          final balanceData = results[1] as Map<String, dynamic>;
+          _walletBalance = num.tryParse(
+                  balanceData['balance']?.toString() ?? '')?.toDouble() ??
+              0.0;
+          _loading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  double get _amount =>
+      _package?.totalAmount ?? _package?.estimatedCost ?? 0;
+
+  bool get _walletSufficient =>
+      _walletBalance != null && _walletBalance! >= _amount;
+
   Future<void> _pay() async {
+    if (_selectedMethod == 'wallet' && !_walletSufficient) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'Insufficient wallet balance. You need ₦${_amount.toStringAsFixed(0)} but have ₦${_walletBalance?.toStringAsFixed(0) ?? '0'}.'),
+        backgroundColor: AppColors.error,
+        action: SnackBarAction(
+          label: 'Top Up',
+          textColor: Colors.white,
+          onPressed: () => context.push('/customer/fund-wallet'),
+        ),
+      ));
+      return;
+    }
     setState(() => _paying = true);
     try {
       if (_selectedMethod == 'wallet') {
@@ -49,8 +81,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
         if (mounted) context.go('/customer/finding-rider/${widget.packageId}');
       } else {
-        // Card / transfer: TODO integrate gateway initialize flow
-        // For now navigate forward — replace with gateway redirect
         if (mounted) context.go('/customer/finding-rider/${widget.packageId}');
       }
     } catch (e) {
@@ -121,6 +151,20 @@ class _PaymentScreenState extends State<PaymentScreen> {
                               const SizedBox(height: 8),
                               Text(_package!.trackingNumber!, style: GoogleFonts.inter(fontSize: 13, color: Colors.white60, letterSpacing: 1.2)),
                             ],
+                            if (_selectedMethod == 'wallet' && !_walletSufficient && _walletBalance != null) ...[
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Wallet short by ₦${(_amount - _walletBalance!).toStringAsFixed(0)}',
+                                  style: GoogleFonts.inter(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -133,8 +177,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         id: 'wallet',
                         icon: Icons.account_balance_wallet_outlined,
                         title: 'TRAKA Wallet',
-                        subtitle: 'Pay from your wallet balance',
+                        subtitle: _walletBalance != null
+                            ? 'Balance: ₦${_walletBalance!.toStringAsFixed(0)}'
+                            : 'Pay from your wallet balance',
                         selected: _selectedMethod == 'wallet',
+                        insufficient: !_walletSufficient,
                         onTap: () => setState(() => _selectedMethod = 'wallet'),
                       ),
                       const SizedBox(height: 10),
@@ -191,9 +238,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: TrakaButton(
-                label: 'Pay Now',
+                label: _selectedMethod == 'wallet' && !_walletSufficient
+                    ? 'Top Up Wallet'
+                    : 'Pay Now',
                 loading: _paying,
-                onPressed: _paying ? null : _pay,
+                onPressed: _paying
+                    ? null
+                    : _selectedMethod == 'wallet' && !_walletSufficient
+                        ? () => context.push('/customer/fund-wallet')
+                        : _pay,
               ),
             ),
           ],
@@ -209,6 +262,7 @@ class _MethodTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool selected;
+  final bool insufficient;
   final VoidCallback onTap;
 
   const _MethodTile({
@@ -217,6 +271,7 @@ class _MethodTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.selected,
+    this.insufficient = false,
     required this.onTap,
   });
 
@@ -231,7 +286,9 @@ class _MethodTile extends StatelessWidget {
           color: selected ? AppColors.accentLight : AppColors.bgSecondary,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: selected ? AppColors.accent : Colors.transparent,
+            color: selected
+                ? (insufficient ? AppColors.error : AppColors.accent)
+                : Colors.transparent,
             width: 1.5,
           ),
         ),
@@ -240,23 +297,40 @@ class _MethodTile extends StatelessWidget {
             Container(
               width: 44, height: 44,
               decoration: BoxDecoration(
-                color: selected ? AppColors.accent : AppColors.bgTertiary,
+                color: selected
+                    ? (insufficient ? AppColors.error : AppColors.accent)
+                    : AppColors.bgTertiary,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: selected ? Colors.white : AppColors.textTertiary, size: 22),
+              child: Icon(icon,
+                  color: selected ? Colors.white : AppColors.textTertiary,
+                  size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
-                  Text(subtitle, style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary)),
+                  Text(title,
+                      style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary)),
+                  Text(subtitle,
+                      style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: insufficient && selected
+                              ? AppColors.error
+                              : AppColors.textTertiary)),
                 ],
               ),
             ),
-            if (selected)
-              const Icon(Icons.check_circle_rounded, color: AppColors.accent, size: 22),
+            if (selected && insufficient)
+              const Icon(Icons.warning_amber_rounded,
+                  color: AppColors.error, size: 22)
+            else if (selected)
+              const Icon(Icons.check_circle_rounded,
+                  color: AppColors.accent, size: 22),
           ],
         ),
       ),

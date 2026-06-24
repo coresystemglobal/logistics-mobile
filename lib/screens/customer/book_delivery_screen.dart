@@ -34,6 +34,7 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
   String _category = 'OTHERS';
   String _packageSize = 'SMALL';
   String _deliverySpeed = 'STANDARD';
+  String _paymentMethod = 'WALLET';
   final _descriptionCtrl = TextEditingController();
   final _deliveryNotesCtrl = TextEditingController();
 
@@ -127,23 +128,39 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
         category: _category,
         packageSize: _packageSize,
         deliverySpeed: _deliverySpeed,
+        paymentMethod: _paymentMethod,
         deliveryNotes: _deliveryNotesCtrl.text.trim().isEmpty
             ? null
             : _deliveryNotesCtrl.text.trim(),
       );
-      if (mounted) {
-        final tn = pkg.trackingNumber;
-        final uri = '/customer/booking-confirm/${pkg.id}';
-        context.go(tn != null && tn.isNotEmpty ? '$uri?trackingNumber=$tn' : uri);
+      if (!mounted) return;
+      final id = pkg.id.isNotEmpty ? pkg.id : null;
+      if (id == null) {
+        context.go('/customer/home');
+        return;
       }
+      final tn = pkg.trackingNumber;
+      final uri = '/customer/booking-confirm/$id';
+      final params = [
+        if (tn != null && tn.isNotEmpty) 'trackingNumber=$tn',
+        'paymentMethod=$_paymentMethod',
+      ].join('&');
+      context.go('$uri?$params');
     } catch (e) {
-      if (mounted) {
-        setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: AppColors.error,
-        ));
+      if (!mounted) return;
+      String msg = e.toString().replaceAll('Exception: ', '');
+      if (msg.contains('connection timeout') ||
+          msg.contains('receive timeout') ||
+          msg.contains('SocketException')) {
+        msg = 'Request timed out. Please check your connection and try again.';
       }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(msg),
+        backgroundColor: AppColors.error,
+        duration: const Duration(seconds: 5),
+      ));
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -273,6 +290,8 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
                     packageSize: _packageSize,
                     deliverySpeed: _deliverySpeed,
                     quote: _quote,
+                    paymentMethod: _paymentMethod,
+                    onPaymentMethodChanged: (v) => setState(() => _paymentMethod = v),
                   ),
                 ],
               ),
@@ -694,6 +713,8 @@ class _StepReview extends StatelessWidget {
   final String packageSize;
   final String deliverySpeed;
   final QuoteModel? quote;
+  final String paymentMethod;
+  final ValueChanged<String> onPaymentMethodChanged;
 
   const _StepReview({
     required this.pickupAddress,
@@ -704,6 +725,8 @@ class _StepReview extends StatelessWidget {
     required this.packageSize,
     required this.deliverySpeed,
     this.quote,
+    required this.paymentMethod,
+    required this.onPaymentMethodChanged,
   });
 
   String _fmt(double? v) => v != null ? '₦${v.toStringAsFixed(0)}' : '—';
@@ -817,46 +840,90 @@ class _StepReview extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Payment method
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.bgPrimary,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.separator.withValues(alpha: 0.3)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: const BoxDecoration(
-                      color: AppColors.accentLight, shape: BoxShape.circle),
-                  child: const Icon(Icons.account_balance_wallet_outlined,
-                      color: AppColors.accent, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('TRAKA Wallet',
-                          style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary)),
-                      Text('Payment via wallet',
-                          style: GoogleFonts.inter(
-                              fontSize: 13, color: AppColors.textTertiary)),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.check_circle_rounded,
-                    color: AppColors.accent, size: 22),
-              ],
-            ),
+          Text('Payment Method',
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+          const SizedBox(height: 12),
+          _PaymentOption(
+            icon: Icons.account_balance_wallet_outlined,
+            title: 'TRAKA Wallet',
+            subtitle: 'Deducted from wallet balance',
+            selected: paymentMethod == 'WALLET',
+            onTap: () => onPaymentMethodChanged('WALLET'),
+          ),
+          const SizedBox(height: 10),
+          _PaymentOption(
+            icon: Icons.payments_outlined,
+            title: 'Pay on Delivery',
+            subtitle: 'Recipient pays the rider in cash',
+            selected: paymentMethod == 'CASH',
+            onTap: () => onPaymentMethodChanged('CASH'),
           ),
           const SizedBox(height: 8),
         ],
+      ),
+    );
+  }
+}
+
+class _PaymentOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _PaymentOption({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.accentLight : AppColors.bgSecondary,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: selected ? AppColors.accent : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40, height: 40,
+              decoration: BoxDecoration(
+                color: selected ? AppColors.accent : AppColors.bgTertiary,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 20,
+                  color: selected ? Colors.white : AppColors.textTertiary),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: GoogleFonts.inter(
+                      fontSize: 15, fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary)),
+                  Text(subtitle, style: GoogleFonts.inter(
+                      fontSize: 12, color: AppColors.textTertiary)),
+                ],
+              ),
+            ),
+            if (selected)
+              const Icon(Icons.check_circle_rounded,
+                  color: AppColors.accent, size: 20),
+          ],
+        ),
       ),
     );
   }

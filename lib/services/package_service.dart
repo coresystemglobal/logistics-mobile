@@ -31,6 +31,7 @@ class PackageService {
     double? packageWeight,
     String? deliveryNotes,
     bool isFragile = false,
+    String paymentMethod = 'WALLET',
   }) async {
     final response = await _api.post(ApiEndpoints.packages, data: {
       'pickup_address': pickupAddress,
@@ -47,10 +48,9 @@ class PackageService {
       if (deliveryNotes != null && deliveryNotes.isNotEmpty)
         'delivery_notes': deliveryNotes,
       'is_fragile': isFragile,
+      'payment_method': paymentMethod == 'CASH' ? 'CASH' : 'DIGITAL',
     });
-    debugPrint('[createPackage] raw response: $response');
     final packageData = response['package'] ?? response['data'] ?? response;
-    debugPrint('[createPackage] packageData: $packageData');
     return PackageModel.fromJson(packageData as Map<String, dynamic>);
   }
 

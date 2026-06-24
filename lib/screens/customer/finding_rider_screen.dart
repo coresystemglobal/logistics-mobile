@@ -2,10 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/api/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
 import '../../models/package_model.dart';
 import '../../services/package_service.dart';
+
+enum _SearchState { searching, riderFound, noRider, scheduled }
 
 class FindingRiderScreen extends StatefulWidget {
   final String packageId;
@@ -17,25 +21,46 @@ class FindingRiderScreen extends StatefulWidget {
 }
 
 class _FindingRiderScreenState extends State<FindingRiderScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulse;
+  late final AnimationController _dotsCtrl;
 
   Timer? _pollTimer;
+  Timer? _timeoutTimer;
   PackageModel? _package;
-  String _statusText = 'Searching for a nearby rider…';
+  _SearchState _state = _SearchState.searching;
+  int _elapsedSeconds = 0;
+  static const _timeoutSeconds = 300; // 5 minutes
 
   final _packageService = PackageService();
 
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 2))
-      ..repeat(reverse: true);
-    _pulse = Tween(begin: 0.85, end: 1.15).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _dotsCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+
     _startPolling();
+    _startTimeout();
+  }
+
+  void _startTimeout() {
+    _timeoutTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _elapsedSeconds++);
+      if (_elapsedSeconds >= _timeoutSeconds &&
+          _state == _SearchState.searching) {
+        _pollTimer?.cancel();
+        setState(() => _state = _SearchState.noRider);
+      }
+    });
   }
 
   void _startPolling() {
@@ -51,181 +76,581 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
 
       if (pkg.riderId != null && pkg.riderId!.isNotEmpty) {
         _pollTimer?.cancel();
-        setState(() => _statusText = 'Rider found! Taking you to tracking…');
-        await Future.delayed(const Duration(milliseconds: 1200));
+        _timeoutTimer?.cancel();
+        setState(() => _state = _SearchState.riderFound);
+        await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) {
           context.go('/customer/track/${pkg.trackingNumber ?? widget.packageId}');
         }
-      } else if (pkg.status == 'PENDING') {
-        setState(() => _statusText = 'Searching for a nearby rider…');
       }
     } catch (_) {}
+  }
+
+  Future<void> _searchAgain() async {
+    setState(() {
+      _state = _SearchState.searching;
+      _elapsedSeconds = 0;
+    });
+    _startPolling();
+    _startTimeout();
+  }
+
+  Future<void> _schedule() async {
+    try {
+      await ApiClient.instance.post(
+        ApiEndpoints.scheduleBackgroundSearch,
+        data: {'package_id': widget.packageId},
+      );
+    } catch (_) {}
+    if (mounted) setState(() => _state = _SearchState.scheduled);
   }
 
   @override
   void dispose() {
     _pulseCtrl.dispose();
+    _dotsCtrl.dispose();
     _pollTimer?.cancel();
+    _timeoutTimer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasRider = _package?.riderId != null && _package!.riderId!.isNotEmpty;
+    final riderFound = _state == _SearchState.riderFound;
+    final noRider = _state == _SearchState.noRider;
+    final scheduled = _state == _SearchState.scheduled;
+    final remaining = (_timeoutSeconds - _elapsedSeconds).clamp(0, _timeoutSeconds);
+
+    // Scheduled state — full screen message, no map needed
+    if (scheduled) {
+      return Scaffold(
+        backgroundColor: AppColors.bgPrimary,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                const Spacer(),
+                Container(
+                  width: 100, height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.iosBlue.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.notifications_active_rounded,
+                      color: AppColors.iosBlue, size: 52),
+                ),
+                const SizedBox(height: 32),
+                Text('We\'re on it!',
+                    style: GoogleFonts.inter(fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
+                const SizedBox(height: 12),
+                Text(
+                  'We\'ll alert you when we get a rider for you.\nYou can close this screen and go about your day.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(fontSize: 16,
+                      color: AppColors.textTertiary, height: 1.55),
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.inventory_2_outlined,
+                          color: AppColors.iosBlue, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          _package?.trackingNumber ?? 'Your package',
+                          style: GoogleFonts.inter(fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                TrakaButton(
+                  label: 'Back to Home',
+                  onPressed: () => context.go('/customer/home'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-
-              // Pulse animation
-              AnimatedBuilder(
-                animation: _pulse,
-                builder: (_, child) => Transform.scale(scale: _pulse.value, child: child),
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: hasRider
-                        ? AppColors.success.withValues(alpha: 0.12)
-                        : AppColors.accent.withValues(alpha: 0.10),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    hasRider ? Icons.check_circle_rounded : Icons.delivery_dining_rounded,
-                    color: hasRider ? AppColors.success : AppColors.accent,
-                    size: 72,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              Text(
-                hasRider ? 'Rider Assigned!' : 'Finding Your Rider',
-                style: GoogleFonts.inter(fontSize: 26, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _statusText,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 16, color: AppColors.textTertiary, height: 1.5),
-              ),
-
-              if (!hasRider) ...[
-                const SizedBox(height: 32),
-                // Animated dots
-                _DotsLoader(),
-              ],
-
-              // Rider info card once assigned
-              if (hasRider && _package?.rider != null) ...[
-                const SizedBox(height: 32),
-                _RiderCard(rider: _package!.rider!),
-              ],
-
-              const Spacer(),
-
-              if (!hasRider)
-                TrakaButton(
-                  label: 'Cancel Search',
-                  variant: TrakaBtnVariant.ghost,
-                  onPressed: () => context.go('/customer/home'),
-                ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RiderCard extends StatelessWidget {
-  final Map<String, dynamic> rider;
-
-  const _RiderCard({required this.rider});
-
-  @override
-  Widget build(BuildContext context) {
-    final name = rider['name'] ?? rider['full_name'] ?? 'Your Rider';
-    final phone = rider['phone'] ?? rider['phone_number'];
-    final rating = (rider['rating'] as num?)?.toDouble();
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.bgSecondary,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
+      body: Stack(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: AppColors.accentLight,
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : 'R',
-              style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.accent),
+          // ── Map area ──
+          Positioned.fill(
+            bottom: _bottomSheetHeight(context),
+            child: _MapArea(pulseCtrl: _pulseCtrl, riderFound: riderFound),
+          ),
+
+          // ── Bottom panel ──
+          Positioned(
+            left: 0, right: 0, bottom: 0,
+            child: _BottomPanel(
+              package: _package,
+              state: _state,
+              dotsCtrl: _dotsCtrl,
+              remainingSeconds: remaining,
+              onCancel: () => context.go('/customer/home'),
+              onSearchAgain: _searchAgain,
+              onSchedule: _schedule,
             ),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                if (phone != null)
-                  Text(phone, style: GoogleFonts.inter(fontSize: 13, color: AppColors.textTertiary)),
-                if (rating != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star_rounded, color: AppColors.warning, size: 16),
-                      const SizedBox(width: 4),
-                      Text(rating.toStringAsFixed(1), style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary)),
-                    ],
-                  ),
-                ],
-              ],
+
+          // ── Back button ──
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            left: 16,
+            child: GestureDetector(
+              onTap: () => context.go('/customer/home'),
+              child: Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.bgPrimary,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.12),
+                        blurRadius: 8, offset: const Offset(0, 2))
+                  ],
+                ),
+                child: const Icon(Icons.arrow_back_rounded,
+                    color: AppColors.textPrimary, size: 20),
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  double _bottomSheetHeight(BuildContext context) {
+    return MediaQuery.of(context).size.height * 0.48;
+  }
 }
 
-class _DotsLoader extends StatefulWidget {
-  @override
-  State<_DotsLoader> createState() => _DotsLoaderState();
-}
+// ── Map placeholder with pulsing rider pins ──────────────────────────────────
+class _MapArea extends StatelessWidget {
+  final AnimationController pulseCtrl;
+  final bool riderFound;
 
-class _DotsLoaderState extends State<_DotsLoader> with SingleTickerProviderStateMixin {
-  late final AnimationController _ctrl;
+  const _MapArea({required this.pulseCtrl, required this.riderFound});
 
   @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat();
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFE8EDF2),
+      child: Stack(
+        children: [
+          // Grid lines simulating a map
+          CustomPaint(size: Size.infinite, painter: _MapGridPainter()),
+
+          // Center pickup pin
+          const Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.location_on_rounded,
+                    color: AppColors.accent, size: 40),
+                SizedBox(height: 2),
+              ],
+            ),
+          ),
+
+          // Pulsing search radius
+          Center(
+            child: AnimatedBuilder(
+              animation: pulseCtrl,
+              builder: (_, __) {
+                final scale = 0.7 + pulseCtrl.value * 0.6;
+                return Opacity(
+                  opacity: (1 - pulseCtrl.value) * 0.4,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: 160, height: 160,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: riderFound ? AppColors.success : AppColors.accent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // Simulated nearby rider dots
+          ..._riderPositions.map((pos) => Positioned(
+            left: MediaQuery.of(context).size.width * pos.$1,
+            top: (MediaQuery.of(context).size.height * 0.52) * pos.$2,
+            child: _RiderPin(found: riderFound),
+          )),
+        ],
+      ),
+    );
   }
 
+  static const _riderPositions = [
+    (0.15, 0.3),
+    (0.72, 0.2),
+    (0.55, 0.65),
+    (0.25, 0.72),
+    (0.80, 0.55),
+  ];
+}
+
+class _RiderPin extends StatelessWidget {
+  final bool found;
+  const _RiderPin({required this.found});
+
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  Widget build(BuildContext context) {
+    return Container(
+      width: 32, height: 32,
+      decoration: BoxDecoration(
+        color: found ? AppColors.success : AppColors.iosBlue,
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 4, offset: const Offset(0, 2))
+        ],
+      ),
+      child: const Icon(Icons.delivery_dining_rounded,
+          color: Colors.white, size: 16),
+    );
+  }
+}
+
+class _MapGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFD0D8E0)
+      ..strokeWidth = 0.8;
+    const step = 40.0;
+    for (double x = 0; x < size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+// ── Bottom panel ─────────────────────────────────────────────────────────────
+class _BottomPanel extends StatelessWidget {
+  final PackageModel? package;
+  final _SearchState state;
+  final AnimationController dotsCtrl;
+  final int remainingSeconds;
+  final VoidCallback onCancel;
+  final VoidCallback onSearchAgain;
+  final VoidCallback onSchedule;
+
+  const _BottomPanel({
+    required this.package,
+    required this.state,
+    required this.dotsCtrl,
+    required this.remainingSeconds,
+    required this.onCancel,
+    required this.onSearchAgain,
+    required this.onSchedule,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final riderFound = state == _SearchState.riderFound;
+    final noRider = state == _SearchState.noRider;
+    final searching = state == _SearchState.searching;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.bgPrimary,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(color: Color(0x18000000), blurRadius: 20, offset: Offset(0, -4))
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.bgTertiary,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── No rider state ──
+          if (noRider) ...[
+            Row(
+              children: [
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.directions_bike_rounded,
+                      color: AppColors.warning, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Riders are currently busy',
+                          style: GoogleFonts.inter(fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary)),
+                      Text('No rider accepted within 5 minutes',
+                          style: GoogleFonts.inter(fontSize: 13,
+                              color: AppColors.textTertiary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Divider(color: AppColors.separator, thickness: 0.5),
+            const SizedBox(height: 20),
+            TrakaButton(
+              label: 'Search Again',
+              onPressed: onSearchAgain,
+              icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
+            ),
+            const SizedBox(height: 10),
+            TrakaButton(
+              label: 'Search in Background',
+              variant: TrakaBtnVariant.secondary,
+              onPressed: onSchedule,
+              icon: const Icon(Icons.notifications_outlined,
+                  color: AppColors.accent, size: 20),
+            ),
+            const SizedBox(height: 10),
+            TrakaButton(
+              label: 'Cancel',
+              variant: TrakaBtnVariant.ghost,
+              onPressed: onCancel,
+            ),
+          ] else ...[
+            // ── Searching / Rider found status row ──
+            Row(
+              children: [
+                Container(
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(
+                    color: riderFound
+                        ? AppColors.success.withValues(alpha: 0.12)
+                        : AppColors.accent.withValues(alpha: 0.10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    riderFound
+                        ? Icons.check_circle_rounded
+                        : Icons.delivery_dining_rounded,
+                    color: riderFound ? AppColors.success : AppColors.accent,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        riderFound ? 'Rider Assigned!' : 'Searching for a rider…',
+                        style: GoogleFonts.inter(fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary),
+                      ),
+                      Text(
+                        riderFound
+                            ? 'Heading to your tracking screen'
+                            : 'Looking for riders near your pickup',
+                        style: GoogleFonts.inter(fontSize: 13,
+                            color: AppColors.textTertiary),
+                      ),
+                    ],
+                  ),
+                ),
+                if (searching) _AnimatedDots(ctrl: dotsCtrl),
+              ],
+            ),
+
+            // Countdown progress bar
+            if (searching) ...[
+              const SizedBox(height: 14),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: LinearProgressIndicator(
+                  value: remainingSeconds / 300,
+                  backgroundColor: AppColors.bgTertiary,
+                  color: remainingSeconds < 60 ? AppColors.warning : AppColors.accent,
+                  minHeight: 4,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${remainingSeconds ~/ 60}:${(remainingSeconds % 60).toString().padLeft(2, '0')} remaining',
+                style: GoogleFonts.inter(fontSize: 11,
+                    color: remainingSeconds < 60
+                        ? AppColors.warning
+                        : AppColors.textQuaternary),
+              ),
+            ],
+
+            const SizedBox(height: 16),
+            const Divider(color: AppColors.separator, thickness: 0.5),
+            const SizedBox(height: 16),
+
+            // Booking details
+            if (package != null) ...[
+              _DetailRow(
+                icon: Icons.radio_button_checked,
+                iconColor: AppColors.accent,
+                label: 'Pickup',
+                value: package!.pickupAddress.isNotEmpty
+                    ? package!.pickupAddress
+                    : 'Your pickup location',
+              ),
+              const SizedBox(height: 12),
+              _DetailRow(
+                icon: Icons.flag_rounded,
+                iconColor: AppColors.textPrimary,
+                label: 'Delivery',
+                value: package!.deliveryAddress,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _DetailRow(
+                      icon: Icons.inventory_2_outlined,
+                      iconColor: AppColors.iosBlue,
+                      label: 'Size',
+                      value: package!.packageSize ?? '—',
+                    ),
+                  ),
+                  Expanded(
+                    child: _DetailRow(
+                      icon: Icons.access_time_rounded,
+                      iconColor: AppColors.success,
+                      label: 'Speed',
+                      value: (package!.deliverySpeed ?? 'STANDARD')
+                          .replaceAll('_', ' '),
+                    ),
+                  ),
+                ],
+              ),
+              if (package!.totalAmount != null) ...[
+                const SizedBox(height: 12),
+                _DetailRow(
+                  icon: Icons.payments_outlined,
+                  iconColor: AppColors.warning,
+                  label: 'Total',
+                  value: '₦${package!.totalAmount!.toStringAsFixed(0)}',
+                ),
+              ],
+            ] else ...[
+              _SkeletonRow(),
+              const SizedBox(height: 10),
+              _SkeletonRow(),
+            ],
+
+            const SizedBox(height: 24),
+            if (searching)
+              TrakaButton(
+                label: 'Cancel Search',
+                variant: TrakaBtnVariant.ghost,
+                onPressed: onCancel,
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  const _DetailRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: iconColor, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: GoogleFonts.inter(
+                  fontSize: 11, color: AppColors.textTertiary)),
+              Text(value, style: GoogleFonts.inter(
+                  fontSize: 13, fontWeight: FontWeight.w500,
+                  color: AppColors.textPrimary),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AnimatedDots extends StatelessWidget {
+  final AnimationController ctrl;
+  const _AnimatedDots({required this.ctrl});
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _ctrl,
+      animation: ctrl,
       builder: (_, __) {
-        final step = (_ctrl.value * 3).floor();
+        final step = (ctrl.value * 3).floor();
         return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(3, (i) => Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 10, height: 10,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: 6, height: 6,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: i == step ? AppColors.accent : AppColors.bgTertiary,
@@ -233,6 +658,19 @@ class _DotsLoaderState extends State<_DotsLoader> with SingleTickerProviderState
           )),
         );
       },
+    );
+  }
+}
+
+class _SkeletonRow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 14,
+      decoration: BoxDecoration(
+        color: AppColors.bgSecondary,
+        borderRadius: BorderRadius.circular(7),
+      ),
     );
   }
 }

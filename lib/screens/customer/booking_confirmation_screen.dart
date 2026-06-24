@@ -1,19 +1,79 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
 
-class BookingConfirmationScreen extends StatelessWidget {
+class BookingConfirmationScreen extends StatefulWidget {
   final String? trackingNumber;
   final String? packageId;
+  final String paymentMethod;
 
-  const BookingConfirmationScreen(
-      {super.key, this.trackingNumber, this.packageId});
+  const BookingConfirmationScreen({
+    super.key,
+    this.trackingNumber,
+    this.packageId,
+    this.paymentMethod = 'WALLET',
+  });
+
+  @override
+  State<BookingConfirmationScreen> createState() =>
+      _BookingConfirmationScreenState();
+}
+
+class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _scaleCtrl;
+  late final Animation<double> _scale;
+  Timer? _redirectTimer;
+  int _countdown = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _scaleCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..forward();
+    _scale = CurvedAnimation(parent: _scaleCtrl, curve: Curves.elasticOut);
+
+    _startRedirect();
+  }
+
+  void _startRedirect() {
+    _redirectTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) return;
+      setState(() => _countdown--);
+      if (_countdown <= 0) {
+        t.cancel();
+        _navigate();
+      }
+    });
+  }
+
+  void _navigate() {
+    if (!mounted || widget.packageId == null) return;
+    // Cash: skip payment, go straight to finding rider
+    // Wallet: go to payment screen first
+    if (widget.paymentMethod == 'CASH') {
+      context.go('/customer/finding-rider/${widget.packageId}');
+    } else {
+      context.go('/customer/payment/${widget.packageId}');
+    }
+  }
+
+  @override
+  void dispose() {
+    _scaleCtrl.dispose();
+    _redirectTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isCash = widget.paymentMethod == 'CASH';
+
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
       body: SafeArea(
@@ -22,13 +82,10 @@ class BookingConfirmationScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              // Success animation
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.elasticOut,
-                builder: (_, v, child) =>
-                    Transform.scale(scale: v, child: child),
+
+              // Success icon
+              ScaleTransition(
+                scale: _scale,
                 child: Container(
                   width: 120,
                   height: 120,
@@ -44,6 +101,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
+
               Text(
                 'Booking Confirmed!',
                 style: GoogleFonts.inter(
@@ -54,78 +112,119 @@ class BookingConfirmationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                "Your delivery has been booked.\nA rider will pick up your package soon.",
+                isCash
+                    ? 'Your delivery has been booked.\nThe rider will collect payment on delivery.'
+                    : 'Your delivery has been booked.\nProceeding to payment…',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
-                  fontSize: 17,
+                  fontSize: 16,
                   color: AppColors.textTertiary,
-                  height: 1.47,
+                  height: 1.5,
                 ),
               ),
-              const SizedBox(height: 36),
-              // Tracking number card
-              if (trackingNumber != null) Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.bgSecondary,
-                  borderRadius: BorderRadius.circular(16),
+
+              if (widget.trackingNumber != null) ...[
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Tracking Number',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: AppColors.textTertiary),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            widget.trackingNumber!,
+                            style: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          GestureDetector(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(
+                                  text: widget.trackingNumber!));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Copied to clipboard'),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            child: const Icon(Icons.copy_rounded,
+                                color: AppColors.iosBlue, size: 20),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                child: Column(
+              ],
+
+              // Payment method badge
+              const SizedBox(height: 20),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: isCash
+                      ? AppColors.warning.withValues(alpha: 0.10)
+                      : AppColors.accentLight,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    Icon(
+                      isCash
+                          ? Icons.payments_outlined
+                          : Icons.account_balance_wallet_outlined,
+                      size: 16,
+                      color: isCash ? AppColors.warning : AppColors.accent,
+                    ),
+                    const SizedBox(width: 6),
                     Text(
-                      'Tracking Number',
+                      isCash ? 'Pay on Delivery' : 'TRAKA Wallet',
                       style: GoogleFonts.inter(
                         fontSize: 13,
-                        color: AppColors.textTertiary,
+                        fontWeight: FontWeight.w600,
+                        color: isCash ? AppColors.warning : AppColors.accent,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          trackingNumber!,
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        GestureDetector(
-                          onTap: () {
-                            Clipboard.setData(
-                                ClipboardData(text: trackingNumber!));
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Copied to clipboard'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          },
-                          child: const Icon(Icons.copy_rounded,
-                              color: AppColors.iosBlue, size: 20),
-                        ),
-                      ],
                     ),
                   ],
                 ),
               ),
+
               const Spacer(),
-              TrakaButton(
-                label: 'Proceed to Payment',
-                onPressed: packageId != null
-                    ? () => context.go('/customer/payment/$packageId')
-                    : null,
+
+              // Countdown indicator
+              Text(
+                isCash
+                    ? 'Finding riders in $_countdown…'
+                    : 'Redirecting to payment in $_countdown…',
+                style: GoogleFonts.inter(
+                    fontSize: 13, color: AppColors.textQuaternary),
               ),
-              const SizedBox(height: 14),
-              TrakaButton(
-                label: 'Back to Home',
-                variant: TrakaBtnVariant.ghost,
-                onPressed: () => context.go('/customer/home'),
+              const SizedBox(height: 12),
+              LinearProgressIndicator(
+                value: (3 - _countdown) / 3,
+                backgroundColor: AppColors.bgTertiary,
+                color: AppColors.accent,
+                borderRadius: BorderRadius.circular(100),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 32),
             ],
           ),
         ),

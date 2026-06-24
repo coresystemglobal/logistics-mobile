@@ -17,13 +17,13 @@ class ApiClient {
     _refreshDio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 120),
     ));
 
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 60),
+      receiveTimeout: const Duration(seconds: 120),
       headers: {'Content-Type': 'application/json'},
     ));
 
@@ -56,6 +56,10 @@ class ApiClient {
 
   void _onError(DioException err, ErrorInterceptorHandler handler) async {
     debugPrint('[API ERROR] ${err.requestOptions.method} ${err.requestOptions.path} → ${err.response?.statusCode} ${err.message}');
+    if (err.response?.data != null) {
+      debugPrint('[API ERROR] response body: ${err.response?.data}');
+    }
+    debugPrint('[API ERROR] request body: ${err.requestOptions.data}');
 
     final statusCode = err.response?.statusCode;
     final errorBody = err.response?.data;
@@ -104,7 +108,9 @@ class ApiClient {
 
   ApiException _mapError(DioException err) {
     final data = err.response?.data;
-    final message = (data is Map ? data['error'] ?? data['message'] : null) ??
+    final validationErrors = data is Map ? (data['validation_errors'] as List?)?.map((e) => e['message'] as String).join(', ') : null;
+    final message = validationErrors ??
+        (data is Map ? data['error'] ?? data['message'] : null) ??
         err.message ??
         'An error occurred';
 

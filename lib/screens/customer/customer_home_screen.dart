@@ -368,8 +368,15 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                           trackingNumber: pkg.trackingNumber ?? '',
                           recipientName: pkg.deliveryAddress,
                           status: pkg.status.toLowerCase(),
-                          onTap: () => context.push(
-                              '/customer/track/${pkg.trackingNumber ?? pkg.id}'),
+                          onTap: () {
+                            if (pkg.status.toUpperCase() == 'PENDING' &&
+                                (pkg.riderId == null || pkg.riderId!.isEmpty)) {
+                              context.push('/customer/finding-rider/${pkg.id}');
+                            } else {
+                              context.push(
+                                  '/customer/track/${pkg.trackingNumber ?? pkg.id}');
+                            }
+                          },
                         ),
                       );
                     },

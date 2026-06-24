@@ -169,8 +169,15 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                           subtitle: pkg.createdAt != null
                               ? _formatDate(pkg.createdAt!)
                               : null,
-                          onTap: () => context.push(
-                              '/customer/track/${pkg.trackingNumber}'),
+                          onTap: () {
+                            if (pkg.status.toUpperCase() == 'PENDING' &&
+                                (pkg.riderId == null || pkg.riderId!.isEmpty)) {
+                              context.push('/customer/finding-rider/${pkg.id}');
+                            } else {
+                              context.push(
+                                  '/customer/track/${pkg.trackingNumber}');
+                            }
+                          },
                         ),
                       );
                     },

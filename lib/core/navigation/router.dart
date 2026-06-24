@@ -116,6 +116,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => BookingConfirmationScreen(
           packageId: state.pathParameters['packageId'],
           trackingNumber: state.uri.queryParameters['trackingNumber'],
+          paymentMethod: state.uri.queryParameters['paymentMethod'] ?? 'WALLET',
         ),
       ),
       GoRoute(

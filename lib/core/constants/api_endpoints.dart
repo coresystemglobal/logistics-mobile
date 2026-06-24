@@ -56,6 +56,9 @@ class ApiEndpoints {
   static const String walletFundVerify = '/wallet/fund/verify';
   static const String walletPayForDelivery = '/wallet/pay-for-delivery';
 
+  // Dispatch
+  static const String scheduleBackgroundSearch = '/packages/schedule-search';
+
   // Notifications
   static const String notifications = '/notifications';
   static const String notificationsUnreadCount = '/notifications/unread-count';
