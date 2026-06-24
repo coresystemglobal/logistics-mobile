@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../providers/auth_provider.dart';
+import '../../screens/rider/notification_preferences_screen.dart';
+import '../../screens/rider/documents_verification_screen.dart';
+import '../../screens/rider/payout_settings_screen.dart';
 
 class RiderProfileScreen extends ConsumerStatefulWidget {
   const RiderProfileScreen({super.key});
@@ -237,7 +241,8 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                       _Item(
                         icon: Icons.notifications_active_rounded,
                         label: 'Notification Preferences',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const NotificationPreferencesScreen())),
                       ),
                     ]),
                     const SizedBox(height: 24),
@@ -256,13 +261,15 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                         icon: Icons.badge_rounded,
                         label: 'Documents & Verification',
                         subtitle: 'License, Insurance',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const DocumentsVerificationScreen())),
                       ),
                       _Item(
                         icon: Icons.account_balance_wallet_rounded,
                         label: 'Payout Settings',
                         subtitle: 'GTB ****4821',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const PayoutSettingsScreen())),
                       ),
                     ]),
                     const SizedBox(height: 24),
@@ -274,12 +281,12 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                       _Item(
                         icon: Icons.help_rounded,
                         label: 'Help Center',
-                        onTap: () {},
+                        onTap: () => context.push('/faq'),
                       ),
                       _Item(
                         icon: Icons.gavel_rounded,
                         label: 'Terms of Service',
-                        onTap: () {},
+                        onTap: () => context.push('/terms-of-service'),
                       ),
                     ]),
                     const SizedBox(height: 32),

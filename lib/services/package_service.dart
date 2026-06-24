@@ -64,9 +64,11 @@ class PackageService {
     try {
       final response = await _api.get(ApiEndpoints.packages);
       final list = response['packages'] ?? response['data'] ?? (response is List ? response : []);
-      return (list as List)
+      final packages = (list as List)
           .map((e) => PackageModel.fromJson(e as Map<String, dynamic>))
           .toList();
+      // Filter out packages with no id to avoid invalid navigation
+      return packages.where((p) => p.id.isNotEmpty).toList();
     } catch (_) {
       return [];
     }
