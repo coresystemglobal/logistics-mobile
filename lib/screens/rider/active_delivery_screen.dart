@@ -165,9 +165,69 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-class _DeliveryView extends StatelessWidget {
+class _DeliveryView extends StatefulWidget {
   final PackageModel package;
   const _DeliveryView({required this.package});
+
+  @override
+  State<_DeliveryView> createState() => _DeliveryViewState();
+}
+
+class _DeliveryViewState extends State<_DeliveryView> {
+  bool _confirming = false;
+
+  Future<void> _confirmPickup() async {
+    setState(() => _confirming = true);
+    try {
+      await ApiClient.instance.post(
+        ApiEndpoints.confirmPickup(widget.package.id),
+        data: {'pin': ''},
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Pickup confirmed — you are now BUSY'),
+          backgroundColor: AppColors.success,
+        ));
+        // Reload to reflect IN_TRANSIT status
+        context.replace('/delivery/${widget.package.id}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _confirming = false);
+    }
+  }
+
+  Future<void> _confirmDelivery() async {
+    setState(() => _confirming = true);
+    try {
+      await ApiClient.instance.post(
+        ApiEndpoints.confirmDelivery(widget.package.id),
+        data: {'pin': ''},
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Delivery complete! You are now AVAILABLE for new jobs.'),
+          backgroundColor: AppColors.success,
+        ));
+        context.go('/jobs');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _confirming = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,7 +309,7 @@ class _DeliveryView extends StatelessWidget {
                           icon: const Icon(Icons.chat_bubble_outline_rounded),
                           color: AppColors.accent,
                           onPressed: () =>
-                              context.push('/customer/chat/${package.id}'),
+                              context.push('/customer/chat/${widget.package.id}'),
                         ),
                       ),
                     ],
@@ -276,7 +336,7 @@ class _DeliveryView extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        package.trackingNumber ?? '',
+                        widget.package.trackingNumber ?? '',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -285,7 +345,7 @@ class _DeliveryView extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        package.status.replaceAll('_', ' '),
+                        widget.package.status.replaceAll('_', ' '),
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
@@ -316,24 +376,36 @@ class _DeliveryView extends StatelessWidget {
                   icon: Icons.radio_button_checked,
                   iconColor: AppColors.accent,
                   label: 'PICKUP FROM',
-                  address: package.pickupAddress,
+                  address: widget.package.pickupAddress,
                 ),
                 const _RouteLine(),
                 _RouteRow(
                   icon: Icons.location_on_rounded,
                   iconColor: AppColors.success,
                   label: 'DELIVER TO',
-                  address: package.deliveryAddress,
+                  address: widget.package.deliveryAddress,
                 ),
                 const SizedBox(height: 24),
 
-                if (package.status == 'PENDING')
-                  TrakaButton(label: 'Arrived at Pickup', onPressed: () {})
-                else if (package.status == 'PICKED_UP' ||
-                    package.status == 'IN_TRANSIT')
-                  TrakaButton(label: 'Submit Proof of Delivery', onPressed: () {})
+                if (widget.package.status == 'PENDING')
+                  TrakaButton(
+                    label: 'Confirm Pickup',
+                    loading: _confirming,
+                    onPressed: _confirming ? null : _confirmPickup,
+                  )
+                else if (widget.package.status == 'IN_TRANSIT' ||
+                    widget.package.status == 'PICKED_UP')
+                  TrakaButton(
+                    label: 'Confirm Delivery',
+                    loading: _confirming,
+                    onPressed: _confirming ? null : _confirmDelivery,
+                  )
                 else
-                  TrakaButton(label: 'Return to Jobs', onPressed: () => context.pop()),
+                  TrakaButton(
+                    label: 'Return to Jobs',
+                    variant: TrakaBtnVariant.secondary,
+                    onPressed: () => context.go('/jobs'),
+                  ),
 
                 const SizedBox(height: 16),
               ],

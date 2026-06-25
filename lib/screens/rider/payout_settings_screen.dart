@@ -100,6 +100,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                   ),
                   SizedBox(
                     height: 44,
+                    width: 110,
                     child: ElevatedButton(
                       onPressed: () => _confirmWithdraw(context),
                       style: ElevatedButton.styleFrom(

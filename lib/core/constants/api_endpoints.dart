@@ -23,6 +23,8 @@ class ApiEndpoints {
   static String claimPackage(String trackingNumber) =>
       '/packages/$trackingNumber/claim';
   static String packageById(String id) => '/packages/by-id/$id';
+  static String confirmPickup(String id) => '/packages/$id/confirm-pickup';
+  static String confirmDelivery(String id) => '/packages/$id/confirm-delivery';
 
   // Riders
   static const String riderJobs = '/riders/jobs';

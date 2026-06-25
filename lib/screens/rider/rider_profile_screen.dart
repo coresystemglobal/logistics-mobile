@@ -22,7 +22,20 @@ class RiderProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
-  bool _isOnline = true;
+  bool _isOnline = false; // initialized from profile on load
+  bool _togglingStatus = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Read initial status from already-loaded rider profile if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final rider = ref.read(_riderProfileProvider).valueOrNull;
+      if (rider != null && mounted) {
+        setState(() => _isOnline = rider.isAvailable || rider.status == 'AVAILABLE');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +164,18 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                                   color: AppColors.textPrimary,
                                 ),
                               ),
-                              data: (rider) => Column(
+                              data: (rider) {
+                        // Sync online state with loaded profile
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            final online = rider.isAvailable ||
+                                rider.status == 'AVAILABLE';
+                            if (_isOnline != online) {
+                              setState(() => _isOnline = online);
+                            }
+                          }
+                        });
+                        return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
@@ -258,7 +282,20 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                           ),
                           Switch(
                             value: _isOnline,
-                            onChanged: (v) => setState(() => _isOnline = v),
+                            onChanged: _togglingStatus ? null : (v) async {
+                              setState(() {
+                                _isOnline = v;
+                                _togglingStatus = true;
+                              });
+                              try {
+                                await RiderService().updateStatus(
+                                    v ? 'ONLINE' : 'OFFLINE');
+                                await RiderService().updateAvailability(v);
+                              } catch (_) {}
+                              if (mounted) {
+                                setState(() => _togglingStatus = false);
+                              }
+                            },
                             activeThumbColor: AppColors.success,
                             trackColor: WidgetStateProperty.resolveWith(
                               (s) => s.contains(WidgetState.selected)
