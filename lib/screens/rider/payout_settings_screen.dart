@@ -456,7 +456,8 @@ class _FrequencyOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selected = value == groupValue;    return Column(
+    final bool selected = value == groupValue;
+    return Column(
       children: [
         InkWell(
           onTap: () => onChanged(value),
@@ -476,8 +477,8 @@ class _FrequencyOption extends StatelessWidget {
                       Text(label,
                           style: GoogleFonts.inter(
                               fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textPrimary)),
+                              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                              color: selected ? AppColors.accent : AppColors.textPrimary)),
                       Text(subtitle,
                           style: GoogleFonts.inter(
                               fontSize: 12,
