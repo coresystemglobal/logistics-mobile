@@ -537,9 +537,7 @@ class _BottomPanel extends StatelessWidget {
                 icon: Icons.radio_button_checked,
                 iconColor: AppColors.accent,
                 label: 'Pickup',
-                value: package!.pickupAddress.isNotEmpty
-                    ? package!.pickupAddress
-                    : 'Your pickup location',
+                value: package!.pickupAddress,
               ),
               const SizedBox(height: 12),
               _DetailRow(
