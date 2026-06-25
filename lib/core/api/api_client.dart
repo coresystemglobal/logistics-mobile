@@ -66,8 +66,10 @@ class ApiClient {
     final isInvalidToken = statusCode == 403 &&
         errorBody is Map &&
         (errorBody['error'] == 'Invalid token');
+    final isAuthEndpoint = err.requestOptions.path.contains('/auth/login') ||
+        err.requestOptions.path.contains('/auth/register');
 
-    if (statusCode == 401 || isInvalidToken) {
+    if ((statusCode == 401 || isInvalidToken) && !isAuthEndpoint) {
       // Try token refresh
       try {
         final refreshed = await _tryRefreshToken();

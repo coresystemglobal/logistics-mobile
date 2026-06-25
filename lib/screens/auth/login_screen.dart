@@ -37,10 +37,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } catch (e) {
       if (mounted) {
+        String msg = e.toString();
+        // Extract clean message from ApiException(statusCode): message format
+        final match = RegExp(r'ApiException\(\d*\): (.+)').firstMatch(msg);
+        if (match != null) msg = match.group(1)!;
+        msg = msg.replaceAll('Exception: ', '');
+        // Friendly message for invalid credentials
+        if (msg.toLowerCase().contains('invalid credentials') ||
+            msg.toLowerCase().contains('unauthorized')) {
+          msg = 'Incorrect email or password. Please try again.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
+            content: Text(msg),
             backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
