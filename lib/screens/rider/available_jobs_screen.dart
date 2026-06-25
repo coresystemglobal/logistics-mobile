@@ -172,17 +172,26 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                             child: Container(
                               width: 80,
                               height: 80,
-                              decoration: const BoxDecoration(
-                                color: AppColors.accentLight,
+                              decoration: BoxDecoration(
+                                color: isOnline
+                                    ? AppColors.accentLight
+                                    : AppColors.bgTertiary,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.search_off_rounded,
-                                  color: AppColors.accent, size: 40),
+                              child: Icon(
+                                isOnline
+                                    ? Icons.search_off_rounded
+                                    : Icons.power_settings_new_rounded,
+                                color: isOnline
+                                    ? AppColors.accent
+                                    : AppColors.textQuaternary,
+                                size: 40,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),
                           Text(
-                            'No jobs right now',
+                            isOnline ? 'No jobs right now' : 'You\'re Offline',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 20,
@@ -192,7 +201,9 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Stay online — new delivery requests will appear here.',
+                            isOnline
+                                ? 'Stay online — new delivery requests will appear here.'
+                                : 'Go online from your profile to start receiving delivery jobs.',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.inter(
                               fontSize: 15,

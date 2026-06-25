@@ -60,7 +60,7 @@ class ReferralScreen extends ConsumerWidget {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).padding.bottom + 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

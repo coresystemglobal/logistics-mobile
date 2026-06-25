@@ -40,8 +40,10 @@ class _NotificationPreferencesScreenState
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(
+              16, 16, 16, MediaQuery.of(context).padding.bottom + 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -147,6 +149,7 @@ class _NotificationPreferencesScreenState
               ),
             ),
           ],
+        ),
         ),
       ),
     );

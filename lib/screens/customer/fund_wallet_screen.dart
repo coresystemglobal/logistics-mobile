@@ -112,7 +112,7 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, MediaQuery.of(context).padding.bottom + 32),
                 child: Column(
                   children: [
                     const SizedBox(height: 24),

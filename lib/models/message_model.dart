@@ -21,7 +21,7 @@ class MessageModel {
         id: json['id']?.toString() ?? '',
         packageId: json['package_id']?.toString() ?? json['packageId']?.toString() ?? '',
         senderId: json['sender_id']?.toString() ?? json['senderId']?.toString() ?? '',
-        content: json['content'] ?? '',
+        content: json['content'] ?? json['message'] ?? '',
         senderName: json['sender_name'] ?? json['senderName'],
         senderRole: json['sender_role'] ?? json['senderRole'],
         createdAt: json['created_at'] != null
