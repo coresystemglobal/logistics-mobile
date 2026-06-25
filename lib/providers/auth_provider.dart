@@ -68,7 +68,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e, stack) {
       debugPrint('[AUTH] Login failed: $e');
       debugPrint('[AUTH] Stack: $stack');
-      state = AuthState.unauthenticated(e.toString());
+      // Don't change state — user was already unauthenticated.
+      // Setting unauthenticated here triggers the router redirect
+      // which navigates away while the login screen is still handling the error.
       rethrow;
     }
   }

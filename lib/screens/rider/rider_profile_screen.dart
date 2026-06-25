@@ -3,10 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../models/rider_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../screens/rider/notification_preferences_screen.dart';
 import '../../screens/rider/documents_verification_screen.dart';
 import '../../screens/rider/payout_settings_screen.dart';
+import '../../services/rider_service.dart';
+
+final _riderProfileProvider = FutureProvider.autoDispose<RiderModel>(
+  (_) => RiderService().getProfile(),
+);
 
 class RiderProfileScreen extends ConsumerStatefulWidget {
   const RiderProfileScreen({super.key});
@@ -21,6 +27,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
+    final riderAsync = ref.watch(_riderProfileProvider);
     final initials = [
       user?.firstName.isNotEmpty == true ? user!.firstName[0] : 'R',
       user?.surname.isNotEmpty == true ? user!.surname[0] : '',
@@ -115,42 +122,82 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  user?.fullName ?? 'Rider',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'TRK-RIDER-4921',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.accent,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star_rounded,
-                                        color: AppColors.warning, size: 14),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '4.9 · 142 deliveries',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        color: AppColors.textTertiary,
-                                      ),
+                            child: riderAsync.when(
+                              loading: () => Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user?.fullName ?? 'Rider',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
                                     ),
-                                  ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Loading...',
+                                    style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        color: AppColors.textTertiary),
+                                  ),
+                                ],
+                              ),
+                              error: (_, __) => Text(
+                                user?.fullName ?? 'Rider',
+                                style: GoogleFonts.inter(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
                                 ),
-                              ],
+                              ),
+                              data: (rider) => Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user?.fullName ?? 'Rider',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    rider.uniqueId.isNotEmpty
+                                        ? rider.uniqueId
+                                        : rider.id,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.accent,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.star_rounded,
+                                          color: AppColors.warning, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '${rider.rating?.toStringAsFixed(1) ?? '—'} · ${rider.totalDeliveries ?? 0} deliveries',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: AppColors.textTertiary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    rider.vehicleType,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
@@ -254,7 +301,10 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                       _Item(
                         icon: Icons.two_wheeler_rounded,
                         label: 'Vehicle Information',
-                        subtitle: 'Motorcycle · LG 293-AB',
+                        subtitle: riderAsync.maybeWhen(
+                          data: (r) => '${r.vehicleType} · ${r.licenseNumber ?? ""}',
+                          orElse: () => 'Loading...',
+                        ),
                         onTap: () {},
                       ),
                       _Item(
