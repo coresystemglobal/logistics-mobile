@@ -139,97 +139,52 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                               loading: () => Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    user?.fullName ?? 'Rider',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
+                                  Text(user?.fullName ?? 'Rider',
+                                      style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                                   const SizedBox(height: 4),
-                                  Text(
-                                    'Loading...',
-                                    style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        color: AppColors.textTertiary),
-                                  ),
+                                  Text('Loading...', style: GoogleFonts.inter(fontSize: 13, color: AppColors.textTertiary)),
                                 ],
                               ),
-                              error: (_, __) => Text(
-                                user?.fullName ?? 'Rider',
-                                style: GoogleFonts.inter(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
+                              error: (_, __) => Text(user?.fullName ?? 'Rider',
+                                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                               data: (rider) {
-                        // Sync online state with loaded profile
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (mounted) {
-                            final online = rider.isAvailable ||
-                                rider.status == 'AVAILABLE';
-                            if (_isOnline != online) {
-                              setState(() => _isOnline = online);
-                            }
-                          }
-                        });
-                        return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    user?.fullName ?? 'Rider',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary,
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  if (mounted) {
+                                    final online = rider.isAvailable || rider.status == 'AVAILABLE';
+                                    if (_isOnline != online) setState(() => _isOnline = online);
+                                  }
+                                });
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(user?.fullName ?? 'Rider',
+                                        style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      rider.uniqueId.isNotEmpty ? rider.uniqueId : rider.id,
+                                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.accent),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    rider.uniqueId.isNotEmpty
-                                        ? rider.uniqueId
-                                        : rider.id,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.accent,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      const Icon(Icons.star_rounded,
-                                          color: AppColors.warning, size: 14),
+                                    const SizedBox(height: 2),
+                                    Row(children: [
+                                      const Icon(Icons.star_rounded, color: AppColors.warning, size: 14),
                                       const SizedBox(width: 4),
                                       Text(
                                         '${rider.rating?.toStringAsFixed(1) ?? '—'} · ${rider.totalDeliveries ?? 0} deliveries',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: AppColors.textTertiary,
-                                        ),
+                                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    rider.vehicleType,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: AppColors.textTertiary,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                    ]),
+                                    const SizedBox(height: 2),
+                                    Text(rider.vehicleType,
+                                        style: GoogleFonts.inter(fontSize: 12, color: AppColors.textTertiary)),
+                                  ],
+                                );
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // Online toggle card
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
@@ -289,7 +244,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                               });
                               try {
                                 await RiderService().updateStatus(
-                                    v ? 'ONLINE' : 'OFFLINE');
+                                    v ? 'AVAILABLE' : 'OFFLINE');
                                 await RiderService().updateAvailability(v);
                               } catch (_) {}
                               if (mounted) {

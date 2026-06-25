@@ -5,10 +5,15 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
+import '../../models/rider_model.dart';
 import '../../services/rider_service.dart';
 
 final _availableJobsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
   (ref) => RiderService().getAvailableJobs(),
+);
+
+final _riderStatusProvider = FutureProvider.autoDispose<RiderModel>(
+  (_) => RiderService().getProfile(),
 );
 
 class AvailableJobsScreen extends ConsumerStatefulWidget {
@@ -39,6 +44,11 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
   @override
   Widget build(BuildContext context) {
     final jobsAsync = ref.watch(_availableJobsProvider);
+    final riderAsync = ref.watch(_riderStatusProvider);
+    final isOnline = riderAsync.maybeWhen(
+      data: (r) => r.isAvailable || r.status == 'AVAILABLE',
+      orElse: () => false,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
@@ -66,7 +76,9 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.1),
+                      color: isOnline
+                          ? AppColors.success.withValues(alpha: 0.1)
+                          : AppColors.textQuaternary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Row(
@@ -74,18 +86,22 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
+                          decoration: BoxDecoration(
+                            color: isOnline
+                                ? AppColors.success
+                                : AppColors.textQuaternary,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'Online',
+                          isOnline ? 'Online' : 'Offline',
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.success,
+                            color: isOnline
+                                ? AppColors.success
+                                : AppColors.textQuaternary,
                           ),
                         ),
                       ],
