@@ -14,6 +14,10 @@ final _availableJobsProvider = FutureProvider.autoDispose<List<Map<String, dynam
   (ref) => RiderService().getAvailableJobs(),
 );
 
+final _activeJobsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>(
+  (ref) => RiderService().getActiveJobs(),
+);
+
 final _riderStatusProvider = FutureProvider.autoDispose<RiderModel>(
   (_) => RiderService().getProfile(),
 );
@@ -46,6 +50,7 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
   @override
   Widget build(BuildContext context) {
     final jobsAsync = ref.watch(_availableJobsProvider);
+    final activeAsync = ref.watch(_activeJobsProvider);
     final riderAsync = ref.watch(_riderStatusProvider);
     final isOnline = riderAsync.maybeWhen(
       data: (r) => r.isAvailable || r.status == 'AVAILABLE',
@@ -122,7 +127,10 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
             // Content
             Expanded(
               child: RefreshIndicator(
-                onRefresh: () => ref.refresh(_availableJobsProvider.future),
+                onRefresh: () async {
+                  await ref.refresh(_availableJobsProvider.future);
+                  await ref.refresh(_activeJobsProvider.future);
+                },
                 color: AppColors.accent,
                 child: jobsAsync.when(
                   loading: () => const Center(
@@ -246,9 +254,51 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
 
                     return ListView.builder(
                       padding: const EdgeInsets.all(16),
-                      itemCount: jobs.length,
-                      itemBuilder: (context, i) =>
-                          _JobCard(job: jobs[i]),
+                      itemCount: jobs.length + 1, // +1 for active jobs header slot
+                      itemBuilder: (context, i) {
+                        // Slot 0: active delivery section
+                        if (i == 0) {
+                          return activeAsync.maybeWhen(
+                            data: (activeJobs) {
+                              if (activeJobs.isEmpty) return const SizedBox.shrink();
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Text(
+                                      'MY ACTIVE DELIVERY',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textTertiary,
+                                        letterSpacing: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                  ...activeJobs.map((job) => _ActiveJobCard(job: job)),
+                                  const SizedBox(height: 8),
+                                  if (jobs.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: Text(
+                                        'AVAILABLE JOBS',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textTertiary,
+                                          letterSpacing: 0.6,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              );
+                            },
+                            orElse: () => const SizedBox.shrink(),
+                          );
+                        }
+                        return _JobCard(job: jobs[i - 1]);
+                      },
                     );
                   },
                 ),
@@ -498,6 +548,151 @@ class _JobCardState extends State<_JobCard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ActiveJobCard extends StatelessWidget {
+  final Map<String, dynamic> job;
+  const _ActiveJobCard({required this.job});
+
+  Color get _statusColor {
+    switch (job['status']) {
+      case 'IN_TRANSIT': return AppColors.success;
+      case 'OUT_FOR_DELIVERY': return AppColors.iosBlue;
+      default: return AppColors.warning;
+    }
+  }
+
+  String get _statusLabel {
+    switch (job['status']) {
+      case 'IN_TRANSIT': return 'In Transit';
+      case 'OUT_FOR_DELIVERY': return 'Out for Delivery';
+      default: return 'Accepted';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pickup = job['pickup_address'] ?? '';
+    final delivery = job['delivery_address'] ?? '';
+    final commission = (job['estimated_commission'] ?? 0.0).toDouble();
+
+    return GestureDetector(
+      onTap: () => context.push('/rider/active/${job['id']}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: AppColors.bgPrimary,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: _statusColor.withValues(alpha: 0.4), width: 1.5),
+          boxShadow: const [
+            BoxShadow(color: Color(0x0D000000), blurRadius: 12, offset: Offset(0, 4)),
+          ],
+        ),
+        child: Column(
+          children: [
+            // Status bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: _statusColor.withValues(alpha: 0.08),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 8, height: 8,
+                    decoration: BoxDecoration(color: _statusColor, shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(_statusLabel,
+                      style: GoogleFonts.inter(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _statusColor)),
+                  const Spacer(),
+                  Text('₦${commission.toStringAsFixed(0)}',
+                      style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.success)),
+                ],
+              ),
+            ),
+
+            // Route
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Column(
+                children: [
+                  Row(children: [
+                    Container(
+                      width: 10, height: 10,
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: AppColors.accentLight, width: 2),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(pickup,
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ]),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4.5),
+                    child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 3),
+                        width: 1.5, height: 16, color: AppColors.separator),
+                  ),
+                  Row(children: [
+                    const Icon(Icons.location_on_rounded, color: AppColors.success, size: 12),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(delivery,
+                          style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+
+            // Continue button
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton.icon(
+                  onPressed: () => context.push('/rider/active/${job['id']}'),
+                  icon: const Icon(Icons.navigation_rounded, size: 18),
+                  label: Text('Continue Delivery',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _statusColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

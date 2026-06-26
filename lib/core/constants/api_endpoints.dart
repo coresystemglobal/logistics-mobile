@@ -28,6 +28,7 @@ class ApiEndpoints {
 
   // Riders
   static const String riderJobs = '/riders/jobs';
+  static const String riderActiveJobs = '/riders/jobs/active';
   static const String riderProfile = '/riders/profile';
   static const String riderLocation = '/riders/location';
   static const String riderStatus = '/riders/status';
