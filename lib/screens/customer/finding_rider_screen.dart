@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
 import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
@@ -93,6 +95,164 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
     });
     _startPolling();
     _startTimeout();
+  }
+
+  Future<void> _showCancelSheet() async {
+    const reasons = [
+      ('FOUND_ALTERNATIVE', 'Found an alternative'),
+      ('WRONG_ORDER_DETAILS', 'Wrong order details'),
+      ('LONG_PICKUP_TIME', 'Taking too long'),
+      ('OTHER', 'Other reason'),
+    ];
+
+    String? selectedReason;
+    final noteCtrl = TextEditingController();
+    bool cancelling = false;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgPrimary,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(
+              24, 20, 24, MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36, height: 4,
+                  decoration: BoxDecoration(
+                      color: AppColors.separator,
+                      borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Cancel Delivery',
+                  style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
+              const SizedBox(height: 6),
+              Text('Please tell us why you\'re cancelling.',
+                  style: GoogleFonts.inter(
+                      fontSize: 14, color: AppColors.textTertiary)),
+              const SizedBox(height: 20),
+              ...reasons.map((r) => GestureDetector(
+                onTap: () => setSheet(() => selectedReason = r.$1),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: selectedReason == r.$1
+                        ? AppColors.accentLight
+                        : AppColors.bgSecondary,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: selectedReason == r.$1
+                          ? AppColors.accent
+                          : Colors.transparent,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(r.$2,
+                          style: GoogleFonts.inter(
+                              fontSize: 15,
+                              color: AppColors.textPrimary)),
+                    ),
+                    if (selectedReason == r.$1)
+                      const Icon(Icons.check_circle_rounded,
+                          color: AppColors.accent, size: 20),
+                  ]),
+                ),
+              )),
+              if (selectedReason == 'OTHER') ...[
+                const SizedBox(height: 8),
+                TextField(
+                  controller: noteCtrl,
+                  maxLines: 2,
+                  style: GoogleFonts.inter(
+                      fontSize: 15, color: AppColors.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Please describe the reason (min 10 chars)…',
+                    hintStyle: GoogleFonts.inter(
+                        fontSize: 14, color: AppColors.textQuaternary),
+                    filled: true,
+                    fillColor: AppColors.bgSecondary,
+                    contentPadding: const EdgeInsets.all(14),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: (selectedReason == null ||
+                              (selectedReason == 'OTHER' &&
+                                  noteCtrl.text.trim().length < 10) ||
+                              cancelling)
+                      ? null
+                      : () async {
+                          setSheet(() => cancelling = true);
+                          try {
+                            await _packageService.cancelPackage(
+                              widget.packageId,
+                              selectedReason!,
+                              false,
+                              cancellationNote: selectedReason == 'OTHER'
+                                  ? noteCtrl.text.trim()
+                                  : null,
+                            );
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            if (mounted) context.go('/customer/home');
+                          } catch (e) {
+                            setSheet(() => cancelling = false);
+                            if (ctx.mounted) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                                content: Text(e
+                                    .toString()
+                                    .replaceAll('Exception: ', '')),
+                                backgroundColor: AppColors.error,
+                              ));
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor:
+                        AppColors.error.withValues(alpha: 0.4),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: cancelling
+                      ? const SizedBox(
+                          width: 22, height: 22,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2.5))
+                      : Text('Confirm Cancellation',
+                          style: GoogleFonts.inter(
+                              fontSize: 16, fontWeight: FontWeight.w600)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    noteCtrl.dispose();
   }
 
   Future<void> _schedule() async {
@@ -205,7 +365,7 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
               state: _state,
               dotsCtrl: _dotsCtrl,
               remainingSeconds: remaining,
-              onCancel: () => context.go('/customer/home'),
+              onCancel: _showCancelSheet,
               onSearchAgain: _searchAgain,
               onSchedule: _schedule,
             ),
@@ -249,112 +409,78 @@ class _MapArea extends StatelessWidget {
 
   const _MapArea({required this.pulseCtrl, required this.riderFound});
 
+  // Lagos centre — default when no package location available
+  static const _defaultLat = 6.5244;
+  static const _defaultLng = 3.3792;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFE8EDF2),
-      child: Stack(
-        children: [
-          // Grid lines simulating a map
-          CustomPaint(size: Size.infinite, painter: _MapGridPainter()),
-
-          // Center pickup pin
-          const Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.location_on_rounded,
-                    color: AppColors.accent, size: 40),
-                SizedBox(height: 2),
-              ],
+    return Stack(
+      children: [
+        // Real OSM tile map
+        FlutterMap(
+          options: const MapOptions(
+            initialCenter: LatLng(_defaultLat, _defaultLng),
+            initialZoom: 14,
+            interactionOptions: InteractionOptions(
+              flags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
             ),
           ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.traka.mobile',
+              maxZoom: 19,
+            ),
+            MarkerLayer(
+              markers: [
+                // Pickup marker
+                Marker(
+                  point: const LatLng(_defaultLat, _defaultLng),
+                  width: 48,
+                  height: 48,
+                  child: const Icon(Icons.location_on_rounded,
+                      color: AppColors.accent, size: 40),
+                ),
+              ],
+            ),
+          ],
+        ),
 
-          // Pulsing search radius
-          Center(
-            child: AnimatedBuilder(
-              animation: pulseCtrl,
-              builder: (_, __) {
-                final scale = 0.7 + pulseCtrl.value * 0.6;
-                return Opacity(
-                  opacity: (1 - pulseCtrl.value) * 0.4,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 160, height: 160,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: riderFound ? AppColors.success : AppColors.accent,
-                          width: 2,
-                        ),
+        // Pulsing search radius overlay
+        Center(
+          child: AnimatedBuilder(
+            animation: pulseCtrl,
+            builder: (_, __) {
+              final scale = 0.7 + pulseCtrl.value * 0.6;
+              return Opacity(
+                opacity: (1 - pulseCtrl.value) * 0.35,
+                child: Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: 180, height: 180,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: (riderFound
+                              ? AppColors.success
+                              : AppColors.accent)
+                          .withValues(alpha: 0.15),
+                      border: Border.all(
+                        color: riderFound
+                            ? AppColors.success
+                            : AppColors.accent,
+                        width: 2,
                       ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
-
-          // Simulated nearby rider dots
-          ..._riderPositions.map((pos) => Positioned(
-            left: MediaQuery.of(context).size.width * pos.$1,
-            top: (MediaQuery.of(context).size.height * 0.52) * pos.$2,
-            child: _RiderPin(found: riderFound),
-          )),
-        ],
-      ),
+        ),
+      ],
     );
   }
-
-  static const _riderPositions = [
-    (0.15, 0.3),
-    (0.72, 0.2),
-    (0.55, 0.65),
-    (0.25, 0.72),
-    (0.80, 0.55),
-  ];
-}
-
-class _RiderPin extends StatelessWidget {
-  final bool found;
-  const _RiderPin({required this.found});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32, height: 32,
-      decoration: BoxDecoration(
-        color: found ? AppColors.success : AppColors.iosBlue,
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4, offset: const Offset(0, 2))
-        ],
-      ),
-      child: const Icon(Icons.delivery_dining_rounded,
-          color: Colors.white, size: 16),
-    );
-  }
-}
-
-class _MapGridPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFFD0D8E0)
-      ..strokeWidth = 0.8;
-    const step = 40.0;
-    for (double x = 0; x < size.width; x += step) {
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-    }
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-  @override
-  bool shouldRepaint(_) => false;
 }
 
 // ── Bottom panel ─────────────────────────────────────────────────────────────

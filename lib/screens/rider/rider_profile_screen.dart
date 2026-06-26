@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/rider_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../screens/rider/edit_rider_profile_screen.dart';
 import '../../screens/rider/notification_preferences_screen.dart';
+import '../customer/change_password_screen.dart';
 import '../../screens/rider/documents_verification_screen.dart';
 import '../../screens/rider/payout_settings_screen.dart';
 import '../../services/rider_service.dart';
@@ -270,12 +272,16 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                       _Item(
                         icon: Icons.manage_accounts_rounded,
                         label: 'Edit Profile',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const EditRiderProfileScreen())),
                       ),
                       _Item(
                         icon: Icons.lock_rounded,
                         label: 'Change Password',
-                        onTap: () {},
+                        onTap: () => Navigator.push(context,
+                            MaterialPageRoute(
+                                builder: (_) => const ChangePasswordScreen())),
                       ),
                       _Item(
                         icon: Icons.notifications_active_rounded,
@@ -294,7 +300,20 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                         icon: Icons.two_wheeler_rounded,
                         label: 'Vehicle Information',
                         subtitle: riderAsync.maybeWhen(
-                          data: (r) => '${r.vehicleType} · ${r.licenseNumber ?? ""}',
+                          data: (r) {
+                            final type = r.vehicleType
+                                .replaceAll('_', ' ')
+                                .toLowerCase()
+                                .split(' ')
+                                .map((w) => w.isNotEmpty
+                                    ? '${w[0].toUpperCase()}${w.substring(1)}'
+                                    : w)
+                                .join(' ');
+                            final license = r.licenseNumber;
+                            return license != null && license.isNotEmpty
+                                ? '$type · $license'
+                                : type;
+                          },
                           orElse: () => 'Loading...',
                         ),
                         onTap: () {},
@@ -302,14 +321,19 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                       _Item(
                         icon: Icons.badge_rounded,
                         label: 'Documents & Verification',
-                        subtitle: 'License, Insurance',
+                        subtitle: riderAsync.maybeWhen(
+                          data: (r) => r.vehicleType == 'BICYCLE'
+                              ? 'ID, Insurance'
+                              : 'License, Insurance',
+                          orElse: () => 'License, Insurance',
+                        ),
                         onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (_) => const DocumentsVerificationScreen())),
                       ),
                       _Item(
                         icon: Icons.account_balance_wallet_rounded,
                         label: 'Payout Settings',
-                        subtitle: 'GTB ****4821',
+                        subtitle: 'Bank account & payout schedule',
                         onTap: () => Navigator.push(context,
                           MaterialPageRoute(builder: (_) => const PayoutSettingsScreen())),
                       ),

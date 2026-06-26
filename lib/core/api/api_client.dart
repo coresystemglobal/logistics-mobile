@@ -55,14 +55,17 @@ class ApiClient {
   }
 
   void _onError(DioException err, ErrorInterceptorHandler handler) async {
-    debugPrint('[API ERROR] ${err.requestOptions.method} ${err.requestOptions.path} → ${err.response?.statusCode} ${err.message}');
-    if (err.response?.data != null) {
-      debugPrint('[API ERROR] response body: ${err.response?.data}');
-    }
+    final statusCode = err.response?.statusCode;
+    final path = err.requestOptions.path;
+
+    // Only log response body when it's a JSON error — skip HTML gateway pages
+    final responseBody = err.response?.data;
+    final isJsonError = responseBody is Map;
+    debugPrint('[API ERROR] ${err.requestOptions.method} $path → $statusCode ${err.message}');
+    if (isJsonError) debugPrint('[API ERROR] response body: $responseBody');
     debugPrint('[API ERROR] request body: ${err.requestOptions.data}');
 
-    final statusCode = err.response?.statusCode;
-    final errorBody = err.response?.data;
+    final errorBody = responseBody;
     final isInvalidToken = statusCode == 403 &&
         errorBody is Map &&
         (errorBody['error'] == 'Invalid token');
@@ -110,9 +113,10 @@ class ApiClient {
 
   ApiException _mapError(DioException err) {
     final data = err.response?.data;
-    final validationErrors = data is Map ? (data['validation_errors'] as List?)?.map((e) => e['message'] as String).join(', ') : null;
+    final isJson = data is Map;
+    final validationErrors = isJson ? (data['validation_errors'] as List?)?.map((e) => e['message'] as String).join(', ') : null;
     final message = validationErrors ??
-        (data is Map ? data['error'] ?? data['message'] : null) ??
+        (isJson ? data['error'] ?? data['message'] : null) ??
         err.message ??
         'An error occurred';
 
@@ -125,7 +129,11 @@ class ApiClient {
         return NotFoundException(message);
       case 422:
         return ValidationException(message,
-            errors: data is Map ? data['details'] : null);
+            errors: isJson ? data['details'] : null);
+      case 502:
+      case 503:
+      case 504:
+        return NetworkException('Server is temporarily unavailable. Please try again.');
       case null:
         return NetworkException(message);
       default:

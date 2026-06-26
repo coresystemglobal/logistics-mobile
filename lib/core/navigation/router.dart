@@ -45,6 +45,8 @@ import '../../screens/customer/referral_screen.dart';
 import '../../screens/customer/address_book_screen.dart';
 import '../../screens/customer/payment_screen.dart';
 import '../../screens/customer/finding_rider_screen.dart';
+import '../../screens/customer/pending_delivery_detail_screen.dart';
+import '../../screens/customer/rebook_screen.dart';
 import '../../screens/legal/terms_of_service_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -123,6 +125,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/customer/track/:trackingNumber',
         builder: (context, state) => TrackingScreen(
           trackingNumber: state.pathParameters['trackingNumber']!,
+          packageId: state.uri.queryParameters['id'],
         ),
       ),
       GoRoute(
@@ -134,6 +137,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/customer/payment/:packageId',
         builder: (context, state) => PaymentScreen(
+          packageId: state.pathParameters['packageId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/customer/pending-delivery/:packageId',
+        builder: (context, state) => PendingDeliveryDetailScreen(
+          packageId: state.pathParameters['packageId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/customer/rebook/:packageId',
+        builder: (context, state) => RebookScreen(
           packageId: state.pathParameters['packageId']!,
         ),
       ),

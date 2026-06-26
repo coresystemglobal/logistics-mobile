@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/api/api_client.dart';
@@ -80,6 +81,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
           data: {'package_id': widget.packageId},
         );
         if (mounted) context.go('/customer/finding-rider/${widget.packageId}');
+      } else if (_selectedMethod == 'transfer') {
+        final result = await ApiClient.instance.post(
+          ApiEndpoints.initializeTransfer(widget.packageId),
+        );
+        setState(() => _paying = false);
+        if (mounted) _showTransferSheet(result);
       } else {
         if (mounted) context.go('/customer/finding-rider/${widget.packageId}');
       }
@@ -92,6 +99,189 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ));
       }
     }
+  }
+
+  void _showTransferSheet(Map<String, dynamic> details) {
+    final accountNumber = details['account_number'] ?? '';
+    final accountName = details['account_name'] ?? '';
+    final bankName = details['bank_name'] ?? '';
+    final amount = details['amount'];
+    final reference = details['reference'] ?? '';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.bgPrimary,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (_) => Padding(
+        padding: EdgeInsets.fromLTRB(
+            24, 20, 24, MediaQuery.of(context).padding.bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                decoration: BoxDecoration(
+                    color: AppColors.separator,
+                    borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(children: [
+              Container(
+                width: 44, height: 44,
+                decoration: const BoxDecoration(
+                    color: AppColors.accentLight, shape: BoxShape.circle),
+                child: const Icon(Icons.account_balance_rounded,
+                    color: AppColors.accent, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Bank Transfer Details',
+                      style: GoogleFonts.inter(
+                          fontSize: 17, fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary)),
+                  Text('Send exact amount to confirm',
+                      style: GoogleFonts.inter(
+                          fontSize: 13, color: AppColors.textTertiary)),
+                ],
+              ),
+            ]),
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.accent,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(children: [
+                Text('Amount to Transfer',
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
+                const SizedBox(height: 4),
+                Text('₦${amount?.toString() ?? _amount.toStringAsFixed(0)}',
+                    style: GoogleFonts.inter(
+                        fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white)),
+              ]),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.bgSecondary,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Column(children: [
+                _TransferRow('Bank', bankName),
+                const Divider(height: 20, color: AppColors.separator, thickness: 0.5),
+                _TransferRow('Account Name', accountName),
+                const Divider(height: 20, color: AppColors.separator, thickness: 0.5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Account Number',
+                        style: GoogleFonts.inter(
+                            fontSize: 13, color: AppColors.textTertiary)),
+                    Row(children: [
+                      Text(accountNumber,
+                          style: GoogleFonts.inter(
+                              fontSize: 15, fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary, letterSpacing: 1.5)),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: accountNumber));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Account number copied'),
+                                duration: Duration(seconds: 2)));
+                        },
+                        child: const Icon(Icons.copy_rounded,
+                            color: AppColors.iosBlue, size: 18),
+                      ),
+                    ]),
+                  ],
+                ),
+                if (reference.isNotEmpty) ...[
+                  const Divider(height: 20, color: AppColors.separator, thickness: 0.5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Reference',
+                          style: GoogleFonts.inter(
+                              fontSize: 13, color: AppColors.textTertiary)),
+                      Row(children: [
+                        Text(reference,
+                            style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary)),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: reference));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Reference copied'),
+                                  duration: Duration(seconds: 2)));
+                          },
+                          child: const Icon(Icons.copy_rounded,
+                              color: AppColors.iosBlue, size: 18),
+                        ),
+                      ]),
+                    ],
+                  ),
+                ],
+              ]),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+              ),
+              child: Row(children: [
+                const Icon(Icons.info_outline_rounded,
+                    color: AppColors.warning, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Transfer the exact amount and include the reference as narration. Confirmation is automatic.',
+                    style: GoogleFonts.inter(
+                        fontSize: 12, color: AppColors.warning, height: 1.4)),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity, height: 52,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.go('/customer/finding-rider/${widget.packageId}');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accent,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: Text('I Have Sent the Transfer',
+                    style: GoogleFonts.inter(
+                        fontSize: 16, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -196,9 +386,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       const SizedBox(height: 10),
                       _MethodTile(
                         id: 'transfer',
-                        icon: Icons.swap_horiz_rounded,
+                        icon: Icons.account_balance_rounded,
                         title: 'Bank Transfer',
-                        subtitle: 'Generate a virtual account',
+                        subtitle: 'Pay via direct bank transfer',
                         selected: _selectedMethod == 'transfer',
                         onTap: () => setState(() => _selectedMethod = 'transfer'),
                       ),
@@ -240,7 +430,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: TrakaButton(
                 label: _selectedMethod == 'wallet' && !_walletSufficient
                     ? 'Top Up Wallet'
-                    : 'Pay Now',
+                    : _selectedMethod == 'transfer'
+                        ? 'Get Account Details'
+                        : 'Pay Now',
                 loading: _paying,
                 onPressed: _paying
                     ? null
@@ -361,6 +553,32 @@ class _SummaryRow extends StatelessWidget {
               Text(value, style: GoogleFonts.inter(fontSize: 14, color: AppColors.textPrimary, fontWeight: FontWeight.w500)),
             ],
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TransferRow extends StatelessWidget {
+  final String label;
+  final String value;
+  const _TransferRow(this.label, this.value);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: GoogleFonts.inter(
+                fontSize: 13, color: AppColors.textTertiary)),
+        Flexible(
+          child: Text(value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary)),
         ),
       ],
     );

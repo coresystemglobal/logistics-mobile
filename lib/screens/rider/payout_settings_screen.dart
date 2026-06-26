@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/api/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
 
 class PayoutSettingsScreen extends StatefulWidget {
@@ -10,33 +12,98 @@ class PayoutSettingsScreen extends StatefulWidget {
 }
 
 class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
-  final _accountNameCtrl = TextEditingController(text: 'John Doe');
-  final _accountNumberCtrl = TextEditingController(text: '0123456789');
-  String _selectedBank = 'Guaranty Trust Bank (GTB)';
+  final _accountNameCtrl = TextEditingController();
+  final _accountNumberCtrl = TextEditingController();
+  String _selectedBank = '';
+  String _selectedBankCode = '';
   String _payoutFrequency = 'DAILY';
+  bool _loading = true;
+  bool _saving = false;
 
   static const _banks = [
-    'Access Bank',
-    'Fidelity Bank',
-    'First Bank of Nigeria',
-    'Guaranty Trust Bank (GTB)',
-    'Kuda Bank',
-    'Opay',
-    'Palmpay',
-    'Polaris Bank',
-    'Stanbic IBTC Bank',
-    'Sterling Bank',
-    'Union Bank',
-    'United Bank for Africa (UBA)',
-    'Wema Bank',
-    'Zenith Bank',
+    ('Access Bank', '044'),
+    ('Fidelity Bank', '070'),
+    ('First Bank of Nigeria', '011'),
+    ('Guaranty Trust Bank (GTB)', '058'),
+    ('Kuda Bank', '090267'),
+    ('Opay', '100004'),
+    ('Palmpay', '100033'),
+    ('Polaris Bank', '076'),
+    ('Stanbic IBTC Bank', '221'),
+    ('Sterling Bank', '232'),
+    ('Union Bank', '032'),
+    ('United Bank for Africa (UBA)', '033'),
+    ('Wema Bank', '035'),
+    ('Zenith Bank', '057'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBankAccount();
+  }
+
+  Future<void> _loadBankAccount() async {
+    try {
+      final data = await ApiClient.instance.get(ApiEndpoints.walletBankAccount);
+      if (mounted) {
+        setState(() {
+          _accountNumberCtrl.text = data['account_number'] ?? '';
+          _accountNameCtrl.text = data['account_name'] ?? '';
+          final bankName = data['bank_name'] ?? '';
+          final bankCode = data['bank_code'] ?? '';
+          if (bankName.isNotEmpty) {
+            _selectedBank = bankName;
+            _selectedBankCode = bankCode;
+          }
+          _loading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   void dispose() {
     _accountNameCtrl.dispose();
     _accountNumberCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_selectedBank.isEmpty || _accountNumberCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill in all bank account details'),
+        backgroundColor: AppColors.error,
+      ));
+      return;
+    }
+    setState(() => _saving = true);
+    try {
+      await ApiClient.instance.put(ApiEndpoints.walletBankAccount, data: {
+        'bank_name': _selectedBank,
+        'bank_code': _selectedBankCode,
+        'account_number': _accountNumberCtrl.text.trim(),
+        'account_name': _accountNameCtrl.text.trim(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Payout settings saved'),
+          backgroundColor: AppColors.success,
+        ));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -58,7 +125,9 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary)),
       ),
-      body: SafeArea(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.accent))
+          : SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
               16, 16, 16, MediaQuery.of(context).padding.bottom + 32),
@@ -154,10 +223,13 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Text(_selectedBank,
+                            child: Text(
+                                _selectedBank.isEmpty ? 'Select bank' : _selectedBank,
                                 style: GoogleFonts.inter(
                                     fontSize: 15,
-                                    color: AppColors.textPrimary)),
+                                    color: _selectedBank.isEmpty
+                                        ? AppColors.textQuaternary
+                                        : AppColors.textPrimary)),
                           ),
                           const Icon(Icons.keyboard_arrow_down_rounded,
                               color: AppColors.textTertiary),
@@ -233,13 +305,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
               width: double.infinity,
               height: 52,
               child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Payout settings saved'),
-                    backgroundColor: AppColors.success,
-                  ));
-                  Navigator.pop(context);
-                },
+                onPressed: _saving ? null : _save,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accent,
                   foregroundColor: Colors.white,
@@ -247,9 +313,12 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: Text('Save Changes',
-                    style: GoogleFonts.inter(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
+                child: _saving
+                    ? const SizedBox(width: 22, height: 22,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                    : Text('Save Changes',
+                        style: GoogleFonts.inter(
+                            fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 16),
@@ -299,15 +368,18 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                     thickness: 0.5,
                     color: AppColors.separator),
                 itemBuilder: (_, i) => ListTile(
-                  title: Text(_banks[i],
+                  title: Text(_banks[i].$1,
                       style: GoogleFonts.inter(
                           fontSize: 15, color: AppColors.textPrimary)),
-                  trailing: _selectedBank == _banks[i]
+                  trailing: _selectedBank == _banks[i].$1
                       ? const Icon(Icons.check_rounded,
                           color: AppColors.accent)
                       : null,
                   onTap: () {
-                    setState(() => _selectedBank = _banks[i]);
+                    setState(() {
+                      _selectedBank = _banks[i].$1;
+                      _selectedBankCode = _banks[i].$2;
+                    });
                     Navigator.pop(context);
                   },
                 ),

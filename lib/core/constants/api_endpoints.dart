@@ -54,9 +54,11 @@ class ApiEndpoints {
   // Wallet
   static const String walletBalance = '/wallet/balance';
   static const String walletTransactions = '/wallet/transactions';
+  static const String walletBankAccount = '/wallet/bank-account';
   static const String walletFundInitialize = '/wallet/fund/initialize';
   static const String walletFundVerify = '/wallet/fund/verify';
   static const String walletPayForDelivery = '/wallet/pay-for-delivery';
+  static String initializeTransfer(String packageId) => '/packages/$packageId/initialize-transfer';
 
   // Dispatch
   static const String scheduleBackgroundSearch = '/packages/schedule-search';

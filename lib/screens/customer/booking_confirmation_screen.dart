@@ -54,9 +54,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
 
   void _navigate() {
     if (!mounted || widget.packageId == null) return;
-    // Cash: skip payment, go straight to finding rider
-    // Wallet: go to payment screen first
-    if (widget.paymentMethod == 'CASH') {
+    // On-delivery methods skip payment screen — go straight to finding rider
+    if (widget.paymentMethod == 'CASH' || widget.paymentMethod == 'BANK_TRANSFER') {
       context.go('/customer/finding-rider/${widget.packageId}');
     } else {
       context.go('/customer/payment/${widget.packageId}');
@@ -73,6 +72,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   @override
   Widget build(BuildContext context) {
     final isCash = widget.paymentMethod == 'CASH';
+    final isBankTransfer = widget.paymentMethod == 'BANK_TRANSFER';
+    final isOnDelivery = isCash || isBankTransfer;
 
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
@@ -112,8 +113,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                isCash
-                    ? 'Your delivery has been booked.\nThe rider will collect payment on delivery.'
+                isOnDelivery
+                    ? 'Your delivery has been booked.\nPayment will be collected on delivery.'
                     : 'Your delivery has been booked.\nProceeding to payment…',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(
@@ -179,7 +180,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isCash
+                  color: isOnDelivery
                       ? AppColors.warning.withValues(alpha: 0.10)
                       : AppColors.accentLight,
                   borderRadius: BorderRadius.circular(100),
@@ -188,19 +189,23 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      isCash
-                          ? Icons.payments_outlined
+                      isOnDelivery
+                          ? (isBankTransfer ? Icons.account_balance_rounded : Icons.payments_outlined)
                           : Icons.account_balance_wallet_outlined,
                       size: 16,
-                      color: isCash ? AppColors.warning : AppColors.accent,
+                      color: isOnDelivery ? AppColors.warning : AppColors.accent,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      isCash ? 'Pay on Delivery' : 'TRAKA Wallet',
+                      isBankTransfer
+                          ? 'Bank Transfer on Delivery'
+                          : isCash
+                              ? 'Cash on Delivery'
+                              : 'TRAKA Wallet',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isCash ? AppColors.warning : AppColors.accent,
+                        color: isOnDelivery ? AppColors.warning : AppColors.accent,
                       ),
                     ),
                   ],
@@ -211,7 +216,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
 
               // Countdown indicator
               Text(
-                isCash
+                isOnDelivery
                     ? 'Finding riders in $_countdown…'
                     : 'Redirecting to payment in $_countdown…',
                 style: GoogleFonts.inter(

@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
 import '../../core/widgets/traka_input.dart';
+import '../../models/address_model.dart';
+import '../../services/address_service.dart';
 import '../../services/package_service.dart';
 import '../../services/matching_service.dart';
 import '../../models/delivery_models.dart';
@@ -267,6 +269,14 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
                     sendTrackingLink: _sendTrackingLink,
                     onToggle: (v) => setState(() => _sendTrackingLink = v),
                     onFieldChanged: _onAddressFieldChanged,
+                    onSelectPickup: (addr) {
+                      setState(() => _pickupCtrl.text = addr);
+                      _onAddressFieldChanged();
+                    },
+                    onSelectDelivery: (addr) {
+                      setState(() => _deliveryCtrl.text = addr);
+                      _onAddressFieldChanged();
+                    },
                   ),
                   _StepPackage(
                     selectedCategory: _category,
@@ -329,6 +339,8 @@ class _StepAddress extends StatefulWidget {
   final bool sendTrackingLink;
   final ValueChanged<bool> onToggle;
   final VoidCallback? onFieldChanged;
+  final ValueChanged<String> onSelectPickup;
+  final ValueChanged<String> onSelectDelivery;
 
   const _StepAddress({
     required this.pickupCtrl,
@@ -338,6 +350,8 @@ class _StepAddress extends StatefulWidget {
     required this.sendTrackingLink,
     required this.onToggle,
     this.onFieldChanged,
+    required this.onSelectPickup,
+    required this.onSelectDelivery,
   });
 
   @override
@@ -345,6 +359,137 @@ class _StepAddress extends StatefulWidget {
 }
 
 class _StepAddressState extends State<_StepAddress> {
+  Future<void> _pickAddress(ValueChanged<String> onSelect) async {
+    final service = AddressService();
+    List<AddressModel> addresses = [];
+    bool loading = true;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgPrimary,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          if (loading) {
+            service.getSavedAddresses().then((data) {
+              if (ctx.mounted) {
+                setSheet(() {
+                  addresses = data.map(AddressModel.fromJson).toList();
+                  loading = false;
+                });
+              }
+            }).catchError((_) {
+              if (ctx.mounted) setSheet(() => loading = false);
+            });
+          }
+          return DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            minChildSize: 0.35,
+            maxChildSize: 0.85,
+            expand: false,
+            builder: (_, controller) => Column(
+              children: [
+                const SizedBox(height: 12),
+                Center(
+                  child: Container(
+                    width: 36, height: 4,
+                    decoration: BoxDecoration(
+                        color: AppColors.separator,
+                        borderRadius: BorderRadius.circular(2)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Text('Saved Addresses',
+                      style: GoogleFonts.inter(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary)),
+                ),
+                Expanded(
+                  child: loading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                              color: AppColors.accent))
+                      : addresses.isEmpty
+                          ? Center(
+                              child: Text('No saved addresses',
+                                  style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      color: AppColors.textTertiary)))
+                          : ListView.separated(
+                              controller: controller,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              itemCount: addresses.length,
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 8),
+                              itemBuilder: (_, i) {
+                                final addr = addresses[i];
+                                return ListTile(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(12)),
+                                  tileColor: AppColors.bgSecondary,
+                                  leading: Container(
+                                    width: 38, height: 38,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentLight,
+                                      borderRadius:
+                                          BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                        Icons.location_on_rounded,
+                                        color: AppColors.accent, size: 18),
+                                  ),
+                                  title: Row(children: [
+                                    Text(addr.label,
+                                        style: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.textPrimary)),
+                                    if (addr.isDefault) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.accentLight,
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                        ),
+                                        child: Text('Default',
+                                            style: GoogleFonts.inter(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.accent)),
+                                      ),
+                                    ],
+                                  ]),
+                                  subtitle: Text(addr.address,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: AppColors.textTertiary)),
+                                  onTap: () {
+                                    onSelect(addr.address);
+                                    Navigator.pop(ctx);
+                                  },
+                                );
+                              },
+                            ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -372,13 +517,20 @@ class _StepAddressState extends State<_StepAddress> {
                 _sectionHeader(
                     Icons.location_on_rounded, AppColors.accent, 'PICKUP DETAILS'),
                 const SizedBox(height: 10),
-                TrakaInput(
-                  hint: 'Pickup address',
-                  controller: widget.pickupCtrl,
-                  prefixIcon: const Icon(Icons.radio_button_checked,
-                      color: AppColors.accent, size: 20),
-                  onChanged: (_) { setState(() {}); widget.onFieldChanged?.call(); },
-                ),
+                Row(children: [
+                  Expanded(
+                    child: TrakaInput(
+                      hint: 'Pickup address',
+                      controller: widget.pickupCtrl,
+                      prefixIcon: const Icon(Icons.radio_button_checked,
+                          color: AppColors.accent, size: 20),
+                      onChanged: (_) { setState(() {}); widget.onFieldChanged?.call(); },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _AddressBookButton(
+                      onTap: () => _pickAddress(widget.onSelectPickup)),
+                ]),
                 const SizedBox(height: 16),
                 const Divider(color: AppColors.separator, thickness: 0.5),
                 const SizedBox(height: 16),
@@ -405,6 +557,12 @@ class _StepAddressState extends State<_StepAddress> {
                   controller: widget.deliveryCtrl,
                   maxLines: 2,
                   onChanged: (_) { setState(() {}); widget.onFieldChanged?.call(); },
+                ),
+                const SizedBox(width: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: _AddressBookButton(
+                      onTap: () => _pickAddress(widget.onSelectDelivery)),
                 ),
                 const SizedBox(height: 14),
                 // Tracking link toggle
@@ -852,9 +1010,17 @@ class _StepReview extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _PaymentOption(
+            icon: Icons.account_balance_rounded,
+            title: 'Bank Transfer on Delivery',
+            subtitle: 'Pay via transfer when package arrives',
+            selected: paymentMethod == 'BANK_TRANSFER',
+            onTap: () => onPaymentMethodChanged('BANK_TRANSFER'),
+          ),
+          const SizedBox(height: 10),
+          _PaymentOption(
             icon: Icons.payments_outlined,
-            title: 'Pay on Delivery',
-            subtitle: 'Recipient pays the rider in cash',
+            title: 'Cash on Delivery',
+            subtitle: 'Pay the rider in cash at delivery',
             selected: paymentMethod == 'CASH',
             onTap: () => onPaymentMethodChanged('CASH'),
           ),
@@ -1054,6 +1220,28 @@ class _PriceLoaderState extends State<_PriceLoader>
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AddressBookButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddressBookButton({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppColors.accentLight,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Icon(Icons.import_contacts_rounded,
+            color: AppColors.accent, size: 20),
       ),
     );
   }

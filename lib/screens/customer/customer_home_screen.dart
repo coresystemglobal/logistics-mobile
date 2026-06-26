@@ -369,14 +369,17 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                           recipientName: pkg.deliveryAddress,
                           status: pkg.status.toLowerCase(),
                           onTap: () {
-                            if (pkg.status.toUpperCase() == 'PENDING' &&
+                            final status = pkg.status.toUpperCase();
+                            if (status == 'PENDING' &&
                                 (pkg.riderId == null || pkg.riderId!.isEmpty) &&
                                 pkg.id.isNotEmpty) {
-                              context.push('/customer/finding-rider/${pkg.id}');
+                              context.push('/customer/pending-delivery/${pkg.id}');
+                            } else if (status == 'CANCELLED' && pkg.id.isNotEmpty) {
+                              context.push('/customer/pending-delivery/${pkg.id}');
                             } else if (pkg.trackingNumber != null &&
                                 pkg.trackingNumber!.isNotEmpty) {
                               context.push(
-                                  '/customer/track/${pkg.trackingNumber ?? pkg.id}');
+                                  '/customer/track/${pkg.trackingNumber}?id=${pkg.id}');
                             }
                           },
                         ),

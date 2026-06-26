@@ -1,14 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
+import '../../models/wallet_model.dart';
+import '../../services/wallet_service.dart';
 
-class WalletScreen extends StatelessWidget {
+final _walletProvider = FutureProvider.autoDispose<WalletModel>(
+  (_) => WalletService().getBalance(),
+);
+
+final _transactionsProvider =
+    FutureProvider.autoDispose<List<WalletTransactionModel>>(
+  (_) => WalletService().getTransactions(limit: 10),
+);
+
+class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletAsync = ref.watch(_walletProvider);
+    final txAsync = ref.watch(_transactionsProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
       body: SafeArea(
@@ -20,14 +35,22 @@ class WalletScreen extends StatelessWidget {
               elevation: 0,
               scrolledUnderElevation: 0,
               automaticallyImplyLeading: false,
-              title: Text(
-                'My Wallet',
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+              title: Text('My Wallet',
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  )),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded,
+                      color: AppColors.accent),
+                  onPressed: () {
+                    ref.invalidate(_walletProvider);
+                    ref.invalidate(_transactionsProvider);
+                  },
                 ),
-              ),
+              ],
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -35,130 +58,164 @@ class WalletScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     // Balance card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.accent, Color(0xFFFF9500)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    walletAsync.when(
+                      loading: () => _BalanceSkeleton(),
+                      error: (_, __) => _BalanceError(
+                          onRetry: () => ref.invalidate(_walletProvider)),
+                      data: (wallet) => Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.accent, Color(0xFFFF9500)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Available Balance',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Available Balance',
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                )),
+                            const SizedBox(height: 8),
+                            Text(
+                              '₦${wallet.balance.toStringAsFixed(2)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 36,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '₦12,400.00',
-                            style: GoogleFonts.inter(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Row(
-                            children: [
+                            if (wallet.isNegative) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Credit limit: ₦${wallet.creditLimit.abs().toStringAsFixed(0)}',
+                                style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.7)),
+                              ),
+                            ],
+                            const SizedBox(height: 24),
+                            Row(children: [
                               Expanded(
                                 child: TrakaButton(
                                   label: 'Add Money',
                                   height: 44,
-                                  variant: TrakaBtnVariant.primary,
                                   onPressed: () =>
                                       context.push('/customer/fund-wallet'),
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: SizedBox(
-                                  height: 44,
-                                  child: OutlinedButton(
-                                    onPressed: () {},
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      side: const BorderSide(
-                                          color: Colors.white, width: 1.5),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(16)),
-                                    ),
-                                    child: Text(
-                                      'Withdraw',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ]),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // Quick stats
-                    const Row(
-                      children: [
-                        Expanded(
-                          child: _WalletStat(
-                            label: 'Total Spent',
-                            value: '₦48,200',
-                            icon: Icons.trending_down_rounded,
-                            iconColor: AppColors.error,
+
+                    // Spend stats derived from transactions
+                    txAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (txs) {
+                        final totalSpent = txs
+                            .where((t) => t.amount < 0)
+                            .fold(0.0, (s, t) => s + t.amount.abs());
+                        final totalFunded = txs
+                            .where((t) => t.amount > 0)
+                            .fold(0.0, (s, t) => s + t.amount);
+                        return Row(children: [
+                          Expanded(
+                            child: _WalletStat(
+                              label: 'Total Spent',
+                              value: '₦${totalSpent.toStringAsFixed(0)}',
+                              icon: Icons.trending_down_rounded,
+                              iconColor: AppColors.error,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          child: _WalletStat(
-                            label: 'Total Funded',
-                            value: '₦60,600',
-                            icon: Icons.trending_up_rounded,
-                            iconColor: AppColors.success,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _WalletStat(
+                              label: 'Total Funded',
+                              value: '₦${totalFunded.toStringAsFixed(0)}',
+                              icon: Icons.trending_up_rounded,
+                              iconColor: AppColors.success,
+                            ),
                           ),
-                        ),
-                      ],
+                        ]);
+                      },
                     ),
                     const SizedBox(height: 24),
-                    // Transactions header
+
+                    // Transactions
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Recent Transactions',
-                          style: GoogleFonts.inter(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => context.push('/customer/transactions'),
-                          child: Text(
-                            'See all',
+                        Text('Recent Transactions',
                             style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: AppColors.iosBlue,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            )),
+                        GestureDetector(
+                          onTap: () =>
+                              context.push('/customer/transactions'),
+                          child: Text('See all',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: AppColors.iosBlue,
+                                fontWeight: FontWeight.w500,
+                              )),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Transactions list
-                    ..._sampleTransactions.map(
-                        (t) => _TransactionRow(transaction: t)),
+
+                    txAsync.when(
+                      loading: () => Column(
+                        children: List.generate(
+                            3, (_) => _TransactionSkeleton()),
+                      ),
+                      error: (e, _) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text('Could not load transactions',
+                              style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: AppColors.textTertiary)),
+                        ),
+                      ),
+                      data: (txs) {
+                        if (txs.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(32),
+                              child: Column(
+                                children: [
+                                  const Icon(
+                                      Icons.receipt_long_outlined,
+                                      size: 48,
+                                      color: AppColors.textQuaternary),
+                                  const SizedBox(height: 12),
+                                  Text('No transactions yet',
+                                      style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          color: AppColors.textTertiary)),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        return Column(
+                          children:
+                              txs.map((t) => _TransactionRow(tx: t)).toList(),
+                        );
+                      },
+                    ),
                     const SizedBox(height: 100),
                   ],
                 ),
@@ -169,33 +226,54 @@ class WalletScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  static const _sampleTransactions = [
-    _Transaction(
-      type: 'debit',
-      title: 'Delivery #TRK-990214',
-      amount: '–₦2,500',
-      date: 'Today, 10:24 AM',
-    ),
-    _Transaction(
-      type: 'credit',
-      title: 'Wallet Top-up',
-      amount: '+₦10,000',
-      date: 'Yesterday, 3:15 PM',
-    ),
-    _Transaction(
-      type: 'debit',
-      title: 'Delivery #TRK-882310',
-      amount: '–₦1,800',
-      date: 'Jun 1, 9:00 AM',
-    ),
-    _Transaction(
-      type: 'credit',
-      title: 'Refund — TRK-741209',
-      amount: '+₦1,200',
-      date: 'May 30, 4:42 PM',
-    ),
-  ];
+class _BalanceSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: AppColors.bgTertiary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      );
+}
+
+class _BalanceError extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _BalanceError({required this.onRetry});
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.bgPrimary,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(children: [
+          const Icon(Icons.error_outline, color: AppColors.error),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text('Could not load balance',
+                  style: GoogleFonts.inter(
+                      fontSize: 14, color: AppColors.textTertiary))),
+          TextButton(
+              onPressed: onRetry,
+              child: Text('Retry',
+                  style: GoogleFonts.inter(color: AppColors.accent))),
+        ]),
+      );
+}
+
+class _TransactionSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        height: 66,
+        decoration: BoxDecoration(
+          color: AppColors.bgTertiary,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
 }
 
 class _WalletStat extends StatelessWidget {
@@ -220,9 +298,7 @@ class _WalletStat extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 12,
-              offset: Offset(0, 4)),
+              color: Color(0x0D000000), blurRadius: 12, offset: Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -246,12 +322,15 @@ class _WalletStat extends StatelessWidget {
 }
 
 class _TransactionRow extends StatelessWidget {
-  final _Transaction transaction;
-  const _TransactionRow({required this.transaction});
+  final WalletTransactionModel tx;
+  const _TransactionRow({required this.tx});
 
   @override
   Widget build(BuildContext context) {
-    final isCredit = transaction.type == 'credit';
+    final isCredit = tx.amount > 0;
+    final label = _label(tx.type);
+    final time = tx.createdAt != null ? _formatDate(tx.createdAt!) : '';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
@@ -260,9 +339,7 @@ class _TransactionRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
-              color: Color(0x0D000000),
-              blurRadius: 12,
-              offset: Offset(0, 4)),
+              color: Color(0x0D000000), blurRadius: 12, offset: Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -279,8 +356,7 @@ class _TransactionRow extends StatelessWidget {
               isCredit
                   ? Icons.arrow_downward_rounded
                   : Icons.arrow_upward_rounded,
-              color:
-                  isCredit ? AppColors.success : AppColors.error,
+              color: isCredit ? AppColors.success : AppColors.error,
               size: 22,
             ),
           ),
@@ -289,44 +365,52 @@ class _TransactionRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(transaction.title,
+                Text(tx.description ?? label,
                     style: GoogleFonts.inter(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,
-                    )),
-                Text(transaction.date,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                Text(time,
                     style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: AppColors.textTertiary)),
+                        fontSize: 12, color: AppColors.textTertiary)),
               ],
             ),
           ),
           Text(
-            transaction.amount,
+            '${isCredit ? '+' : '–'}₦${tx.amount.abs().toStringAsFixed(0)}',
             style: GoogleFonts.inter(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
-              color:
-                  isCredit ? AppColors.success : AppColors.textPrimary,
+              color: isCredit ? AppColors.success : AppColors.textPrimary,
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class _Transaction {
-  final String type;
-  final String title;
-  final String amount;
-  final String date;
+  String _label(String type) {
+    switch (type) {
+      case 'DEPOSIT': return 'Wallet Top-up';
+      case 'DELIVERY_PAYMENT': return 'Delivery Fee';
+      case 'COMMISSION_DEBIT': return 'Commission';
+      case 'TRIP_EARNING': return 'Trip Earning';
+      case 'WITHDRAWAL': return 'Withdrawal';
+      default: return type.replaceAll('_', ' ');
+    }
+  }
 
-  const _Transaction({
-    required this.type,
-    required this.title,
-    required this.amount,
-    required this.date,
-  });
+  String _formatDate(DateTime dt) {
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inDays == 0) return 'Today, ${_time(dt)}';
+    if (diff.inDays == 1) return 'Yesterday, ${_time(dt)}';
+    return '${dt.day}/${dt.month}/${dt.year}, ${_time(dt)}';
+  }
+
+  String _time(DateTime dt) =>
+      '${dt.hour}:${dt.minute.toString().padLeft(2, '0')} ${dt.hour >= 12 ? 'PM' : 'AM'}';
 }

@@ -48,7 +48,11 @@ class PackageService {
       if (deliveryNotes != null && deliveryNotes.isNotEmpty)
         'delivery_notes': deliveryNotes,
       'is_fragile': isFragile,
-      'payment_method': paymentMethod == 'CASH' ? 'CASH' : 'DIGITAL',
+      'payment_method': paymentMethod == 'CASH'
+          ? 'CASH'
+          : paymentMethod == 'BANK_TRANSFER'
+              ? 'BANK_TRANSFER'
+              : 'DIGITAL',
     });
     final packageData = response['package'] ?? response['data'] ?? response;
     return PackageModel.fromJson(packageData as Map<String, dynamic>);

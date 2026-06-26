@@ -412,8 +412,12 @@ class _JobCard extends StatelessWidget {
                   child: SizedBox(
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () => context.push(
-                          '/rider/active/${job['package_id'] ?? 'unknown'}'),
+                      onPressed: () {
+                          final id = job['id']?.toString() ?? '';
+                          if (id.isNotEmpty) {
+                            context.push('/rider/active/$id');
+                          }
+                        },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,

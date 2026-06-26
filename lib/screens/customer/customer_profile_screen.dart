@@ -190,7 +190,9 @@ class CustomerProfileScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                     // Profile card
-                    Container(
+                    GestureDetector(
+                      onTap: () => _showEditProfile(context, ref),
+                      child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.bgPrimary,
@@ -256,6 +258,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
+                    ),
                     ),
                     const SizedBox(height: 24),
 

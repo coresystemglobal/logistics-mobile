@@ -24,6 +24,7 @@ class PackageModel {
   final DateTime? createdAt;
   final double? estimatedCost;
   final Map<String, dynamic>? rider;
+  final String? pickupPin;
 
   const PackageModel({
     required this.id,
@@ -51,6 +52,7 @@ class PackageModel {
     this.createdAt,
     this.estimatedCost,
     this.rider,
+    this.pickupPin,
   });
 
   factory PackageModel.fromJson(Map<String, dynamic> json) => PackageModel(
@@ -79,6 +81,7 @@ class PackageModel {
         createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : null,
         estimatedCost: num.tryParse((json['estimated_cost'] ?? json['total_amount'] ?? json['totalAmount'])?.toString() ?? '')?.toDouble(),
         rider: json['rider'] as Map<String, dynamic>?,
+        pickupPin: json['pickup_pin']?.toString() ?? json['pickupPin']?.toString(),
       );
 
   bool get isActive =>

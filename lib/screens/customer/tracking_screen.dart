@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,7 +11,8 @@ import '../../models/package_model.dart';
 
 class TrackingScreen extends ConsumerStatefulWidget {
   final String trackingNumber;
-  const TrackingScreen({super.key, required this.trackingNumber});
+  final String? packageId;
+  const TrackingScreen({super.key, required this.trackingNumber, this.packageId});
 
   @override
   ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
@@ -20,34 +23,164 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   bool _isLoading = true;
   String? _error;
   final _packageService = PackageService();
+  Timer? _pollTimer;
+  bool _pickupDialogShown = false;
 
   @override
   void initState() {
     super.initState();
     _loadPackage();
+    // Poll every 8 seconds while screen is open to catch rider arrival
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 8),
+      (_) => _pollStatus(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _pollStatus() async {
+    if (!mounted) return;
+    try {
+      final PackageModel pkg;
+      if (widget.packageId != null && widget.packageId!.isNotEmpty) {
+        pkg = await _packageService.getPackageById(widget.packageId!);
+      } else {
+        pkg = await _packageService.trackPackage(widget.trackingNumber);
+      }
+      if (!mounted) return;
+      final previousStatus = _package?.status;
+      setState(() => _package = pkg);
+
+      // Show pickup code when rider arrives (status becomes OUT_FOR_DELIVERY)
+      // and we haven't shown it yet this session
+      if (!_pickupDialogShown &&
+          pkg.status == 'OUT_FOR_DELIVERY' &&
+          previousStatus != 'OUT_FOR_DELIVERY' &&
+          pkg.pickupPin != null) {
+        _pickupDialogShown = true;
+        _showPickupCodeDialog(pkg.pickupPin!);
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadPackage() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    setState(() { _isLoading = true; _error = null; });
     try {
-      final pkg = await _packageService.trackPackage(widget.trackingNumber);
-      if (mounted) {
-        setState(() {
-        _package = pkg;
-        _isLoading = false;
-      });
+      final PackageModel pkg;
+      if (widget.packageId != null && widget.packageId!.isNotEmpty) {
+        pkg = await _packageService.getPackageById(widget.packageId!);
+      } else {
+        pkg = await _packageService.trackPackage(widget.trackingNumber);
+      }
+      if (mounted) setState(() { _package = pkg; _isLoading = false; });
+
+      // If screen is opened when rider is already at pickup, show code immediately
+      if (mounted &&
+          pkg.status == 'OUT_FOR_DELIVERY' &&
+          !_pickupDialogShown &&
+          pkg.pickupPin != null) {
+        _pickupDialogShown = true;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _showPickupCodeDialog(pkg.pickupPin!),
+        );
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
+      if (mounted) setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
       });
-      }
     }
+  }
+
+  void _showPickupCodeDialog(String pin) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: AppColors.bgPrimary,
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64, height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withValues(alpha: 0.10),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.delivery_dining_rounded,
+                    color: AppColors.accent, size: 32),
+              ),
+              const SizedBox(height: 16),
+              Text('Your rider has arrived!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary)),
+              const SizedBox(height: 8),
+              Text('Share this pickup code with the rider to hand over your package.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.textTertiary,
+                      height: 1.5)),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: pin));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Pickup code copied'),
+                        duration: Duration(seconds: 2)),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        pin,
+                        style: GoogleFonts.inter(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 10),
+                      ),
+                      const SizedBox(width: 12),
+                      const Icon(Icons.copy_rounded,
+                          color: Colors.white70, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Dismiss',
+                    style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: AppColors.textTertiary,
+                        fontWeight: FontWeight.w500)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   List<_TrackingStep> _buildSteps(PackageModel pkg) {
@@ -273,6 +406,25 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
 
                   // Actions
                   if (pkg.isActive) ...[
+                    if (pkg.status == 'OUT_FOR_DELIVERY' && pkg.pickupPin != null) ...[
+                      SizedBox(
+                        height: 52,
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showPickupCodeDialog(pkg.pickupPin!),
+                          icon: const Icon(Icons.pin_outlined, size: 20),
+                          label: const Text('Show Pickup Code'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.accent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     if (pkg.riderId != null)
                       SizedBox(
                         height: 52,
