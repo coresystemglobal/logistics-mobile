@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/api_endpoints.dart';
+import '../../core/api/api_client.dart';
 import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/rider_model.dart';
@@ -259,12 +261,40 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
   }
 }
 
-class _JobCard extends StatelessWidget {
+class _JobCard extends StatefulWidget {
   final Map<String, dynamic> job;
   const _JobCard({required this.job});
 
   @override
+  State<_JobCard> createState() => _JobCardState();
+}
+
+class _JobCardState extends State<_JobCard> {
+  bool _accepting = false;
+
+  Future<void> _accept() async {
+    final id = widget.job['id']?.toString() ?? '';
+    if (id.isEmpty) return;
+    setState(() => _accepting = true);
+    try {
+      await ApiClient.instance.post(
+        '/packages/$id/assign-self',
+      );
+      if (mounted) context.push('/rider/active/$id');
+    } catch (e) {
+      if (mounted) {
+        setState(() => _accepting = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ));
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final job = widget.job;
     final pickup = job['pickup_address'] ?? 'Unknown Pickup';
     final delivery = job['delivery_address'] ?? 'Unknown Delivery';
     final commission = (job['estimated_commission'] ?? 0.0).toDouble();
@@ -442,12 +472,7 @@ class _JobCard extends StatelessWidget {
                   child: SizedBox(
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () {
-                        final id = job['id']?.toString() ?? '';
-                        if (id.isNotEmpty) {
-                          context.push('/rider/active/$id');
-                        }
-                      },
+                      onPressed: _accepting ? null : _accept,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accent,
                         foregroundColor: Colors.white,
@@ -456,10 +481,16 @@ class _JobCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: Text(
-                        'Accept Job',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                      ),
+                      child: _accepting
+                          ? const SizedBox(
+                              width: 20, height: 20,
+                              child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.5))
+                          : Text(
+                              'Accept Job',
+                              style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w600),
+                            ),
                     ),
                   ),
                 ),

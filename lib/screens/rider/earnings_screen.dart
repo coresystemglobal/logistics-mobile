@@ -25,18 +25,29 @@ class EarningsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.bgSecondary,
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: _EarningsHeader(
-                onRefresh: () {
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            backgroundColor: AppColors.bgPrimary,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            automaticallyImplyLeading: false,
+            title: Text('Earnings',
+                style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary)),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
+                onPressed: () {
                   ref.invalidate(_earningsProvider);
                   ref.invalidate(_earningsTxProvider);
                 },
               ),
-            ),
+            ],
+          ),
 
             SliverToBoxAdapter(
               child: Padding(
@@ -213,7 +224,6 @@ class EarningsScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
     );
   }
 
@@ -235,41 +245,6 @@ class EarningsScreen extends ConsumerWidget {
                   style: GoogleFonts.inter(color: AppColors.accent))),
         ]),
       );
-}
-
-class _EarningsHeader extends SliverPersistentHeaderDelegate {
-  final VoidCallback onRefresh;
-  const _EarningsHeader({required this.onRefresh});
-
-  @override
-  double get minExtent => 64;
-  @override
-  double get maxExtent => 64;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: AppColors.bgPrimary,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(children: [
-        Expanded(
-          child: Text('Earnings',
-              style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary)),
-        ),
-        IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: AppColors.accent),
-          onPressed: onRefresh,
-        ),
-      ]),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_EarningsHeader old) => false;
 }
 
 class _Skeleton extends StatelessWidget {
