@@ -187,7 +187,7 @@ class TransactionDetailScreen extends StatelessWidget {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => context.push('/customer/track/$packageId'),
+                              onTap: () => context.push('/customer/track/_?id=$packageId'),
                               child: Row(
                                 children: [
                                   Text('View Package',

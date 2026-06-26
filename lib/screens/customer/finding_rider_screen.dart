@@ -82,7 +82,7 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
         setState(() => _state = _SearchState.riderFound);
         await Future.delayed(const Duration(milliseconds: 1500));
         if (mounted) {
-          context.go('/customer/track/${pkg.trackingNumber ?? widget.packageId}');
+          context.go('/customer/track/${pkg.trackingNumber ?? '_'}?id=${widget.packageId}');
         }
       }
     } catch (_) {}

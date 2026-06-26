@@ -300,7 +300,7 @@ class _ContextCard extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () => context.push('/customer/track/$packageId'),
+              onPressed: () => context.push('/customer/track/_?id=$packageId'),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.iosBlue,
                 padding: EdgeInsets.zero,
