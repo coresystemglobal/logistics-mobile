@@ -75,7 +75,10 @@ class _PackageChatScreenState extends ConsumerState<PackageChatScreen> {
           // Header
           _ChatHeader(packageId: widget.packageId),
           // Context card
-          _ContextCard(packageId: widget.packageId),
+          _ContextCard(
+            packageId: widget.packageId,
+            isRider: currentUser?.role == 'RIDER',
+          ),
           // Messages
           Expanded(
             child: messagesAsync.when(
@@ -233,7 +236,8 @@ class _ChatHeader extends StatelessWidget {
 
 class _ContextCard extends StatelessWidget {
   final String packageId;
-  const _ContextCard({required this.packageId});
+  final bool isRider;
+  const _ContextCard({required this.packageId, this.isRider = false});
 
   @override
   Widget build(BuildContext context) {
@@ -299,6 +303,7 @@ class _ContextCard extends StatelessWidget {
                 ],
               ),
             ),
+            if (!isRider)
             TextButton(
               onPressed: () => context.push('/customer/track/_?id=$packageId'),
               style: TextButton.styleFrom(

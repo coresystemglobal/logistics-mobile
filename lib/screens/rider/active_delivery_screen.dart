@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-   import 'package:geocoding/geocoding.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -39,6 +41,11 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
   bool _centredOnRider = false;
   Timer? _locationTimer;
 
+  // Routing
+  LatLng? _destinationPoint;   // geocoded pickup or delivery address
+  List<LatLng> _routePoints = [];
+  bool _fetchingRoute = false;
+
   @override
   void initState() {
     super.initState();
@@ -56,11 +63,50 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
       final locations = await locationFromAddress(address);
       if (locations.isNotEmpty && mounted) {
         final pos = LatLng(locations.first.latitude, locations.first.longitude);
-        setState(() => _mapCenter = pos);
+        setState(() {
+          _mapCenter = pos;
+          _destinationPoint = pos;
+        });
         try { _mapController.move(pos, 15); } catch (_) {}
+        // Try to draw route if we already have rider position
+        if (_riderPosition != null) _fetchRoute(_riderPosition!, pos);
       }
     } catch (_) {
       // geocoding failed — stay on Lagos fallback
+    }
+  }
+
+  Future<void> _fetchRoute(LatLng from, LatLng to) async {
+    if (_fetchingRoute) return;
+    _fetchingRoute = true;
+    try {
+      // OSRM public API — free, no key required
+      final url =
+          'https://router.project-osrm.org/route/v1/driving/${from.longitude},${from.latitude};${to.longitude},${to.latitude}?overview=full&geometries=geojson';
+      final response = await Dio().get(url,
+          options: Options(receiveTimeout: const Duration(seconds: 8)));
+      final data = response.data is String
+          ? jsonDecode(response.data as String)
+          : response.data as Map<String, dynamic>;
+      final coords = data['routes'][0]['geometry']['coordinates'] as List;
+      final points =
+          coords.map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble())).toList();
+      if (mounted) {
+        setState(() => _routePoints = points);
+        // Fit map to show the full route
+        if (points.isNotEmpty) {
+          final bounds = LatLngBounds.fromPoints(points);
+          try {
+            _mapController.fitCamera(
+              CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(60)),
+            );
+          } catch (_) {}
+        }
+      }
+    } catch (_) {
+      // Route fetch failed — map still usable without polyline
+    } finally {
+      _fetchingRoute = false;
     }
   }
 
@@ -76,9 +122,12 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
     try {
       final pkg = await PackageService().getPackageById(widget.packageId);
       if (mounted) {
-        setState(() { _package = pkg; _isLoading = false; });
-        // Centre map on pickup address while waiting for GPS
-        _geocodePickupAddress(pkg.pickupAddress);
+        setState(() { _package = pkg; _isLoading = false; _routePoints = []; });
+        // Navigate to pickup when PENDING, delivery address when IN_TRANSIT
+        final target = pkg.status == 'IN_TRANSIT'
+            ? pkg.deliveryAddress
+            : pkg.pickupAddress;
+        _geocodePickupAddress(target);
       }
     } catch (e) {
       if (mounted) setState(() { _error = e.toString().replaceAll('Exception: ', ''); _isLoading = false; });
@@ -114,6 +163,13 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
         });
         // Only animate to rider position — afterwards map follows rider
         try { _mapController.move(pos, _centredOnRider ? _mapController.camera.zoom : 15); } catch (_) {}
+        if (!_centredOnRider) {
+          // First GPS fix — fetch route from rider to destination
+          if (_destinationPoint != null) _fetchRoute(pos, _destinationPoint!);
+        } else if (_routePoints.isNotEmpty && _destinationPoint != null) {
+          // Refresh route every 30 seconds (every 6 ticks of 5s)
+          _fetchRoute(pos, _destinationPoint!);
+        }
         _centredOnRider = true;
       }
       await ApiClient.instance.put(
@@ -188,7 +244,37 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
                 userAgentPackageName: 'com.traka.mobile',
                 maxZoom: 19,
               ),
+              // Route polyline
+              if (_routePoints.isNotEmpty)
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: _routePoints,
+                      color: AppColors.accent,
+                      strokeWidth: 4.5,
+                    ),
+                  ],
+                ),
               MarkerLayer(markers: [
+                // Destination pin
+                if (_destinationPoint != null)
+                  Marker(
+                    point: _destinationPoint!,
+                    width: 40,
+                    height: 48,
+                    alignment: Alignment.topCenter,
+                    child: const Icon(
+                      Icons.location_on_rounded,
+                      color: AppColors.success,
+                      size: 40,
+                      shadows: [
+                        Shadow(
+                            color: Color(0x40000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 2))
+                      ],
+                    ),
+                  ),
                 // Rider position
                 if (_riderPosition != null)
                   Marker(
@@ -357,10 +443,14 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
                   const SizedBox(height: 20),
 
                   // Action button
-                  _ActionButton(package: pkg, onDone: () {
-                    ref.invalidate(authProvider);
-                    context.go('/rider/jobs');
-                  }),
+                  _ActionButton(
+                    package: pkg,
+                    onPickupConfirmed: _loadPackage,
+                    onDone: () {
+                      ref.invalidate(authProvider);
+                      context.go('/rider/jobs');
+                    },
+                  ),
                 ],
               ),
             ),
@@ -374,8 +464,13 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
 // ── Action button (confirm pickup / confirm delivery) ────────────────────────
 class _ActionButton extends StatefulWidget {
   final PackageModel package;
+  final VoidCallback onPickupConfirmed;
   final VoidCallback onDone;
-  const _ActionButton({required this.package, required this.onDone});
+  const _ActionButton({
+    required this.package,
+    required this.onPickupConfirmed,
+    required this.onDone,
+  });
 
   @override
   State<_ActionButton> createState() => _ActionButtonState();
@@ -383,6 +478,7 @@ class _ActionButton extends StatefulWidget {
 
 class _ActionButtonState extends State<_ActionButton> {
   bool _loading = false;
+  bool _cancelling = false;
 
   Future<void> _confirmPickup() async {
     final pin = await _askPin(context, 'Enter Pickup PIN');
@@ -398,12 +494,59 @@ class _ActionButtonState extends State<_ActionButton> {
           content: Text('Pickup confirmed — heading to delivery!'),
           backgroundColor: AppColors.success,
         ));
-        context.replace('/rider/active/${widget.package.id}');
+        widget.onPickupConfirmed(); // reload package → button switches to Confirm Delivery
       }
     } catch (e) {
       if (mounted) _showError(e.toString());
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _cancelJob() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppColors.bgPrimary,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Cancel Job?',
+            style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+        content: Text(
+          'Are you sure you want to cancel this job? It will go back to the available jobs pool.',
+          style: GoogleFonts.inter(
+              fontSize: 14, color: AppColors.textTertiary, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Keep Job',
+                style: GoogleFonts.inter(color: AppColors.textTertiary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12))),
+            child: Text('Cancel Job',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    setState(() => _cancelling = true);
+    try {
+      await ApiClient.instance.post(
+        '/packages/${widget.package.id}/unassign-self',
+      );
+      if (mounted) widget.onDone();
+    } catch (e) {
+      if (mounted) _showError(e.toString());
+      if (mounted) setState(() => _cancelling = false);
     }
   }
 
@@ -497,10 +640,21 @@ class _ActionButtonState extends State<_ActionButton> {
   Widget build(BuildContext context) {
     final status = widget.package.status;
     if (status == 'PENDING' || status == 'OUT_FOR_DELIVERY') {
-      return TrakaButton(
-        label: 'Confirm Pickup',
-        loading: _loading,
-        onPressed: _loading ? null : _confirmPickup,
+      return Column(
+        children: [
+          TrakaButton(
+            label: 'Confirm Pickup',
+            loading: _loading,
+            onPressed: _loading || _cancelling ? null : _confirmPickup,
+          ),
+          const SizedBox(height: 10),
+          TrakaButton(
+            label: 'Cancel Job',
+            variant: TrakaBtnVariant.danger,
+            loading: _cancelling,
+            onPressed: _loading || _cancelling ? null : _cancelJob,
+          ),
+        ],
       );
     } else if (status == 'IN_TRANSIT') {
       return TrakaButton(

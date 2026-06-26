@@ -231,8 +231,26 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                                       : 'Not receiving new jobs',
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: AppColors.textTertiary,
+                                    color: riderAsync.maybeWhen(
+                                      data: (r) => r.status == 'BUSY'
+                                          ? AppColors.warning
+                                          : AppColors.textTertiary,
+                                      orElse: () => AppColors.textTertiary,
+                                    ),
                                   ),
+                                ),
+                                riderAsync.maybeWhen(
+                                  data: (r) => r.status == 'BUSY'
+                                      ? Text(
+                                          'Complete your active delivery first',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 11,
+                                            color: AppColors.warning,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                  orElse: () => const SizedBox.shrink(),
                                 ),
                               ],
                             ),
@@ -240,6 +258,23 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
                           Switch(
                             value: _isOnline,
                             onChanged: _togglingStatus ? null : (v) async {
+                              // Block going offline while on an active delivery
+                              if (!v) {
+                                final rider = ref.read(_riderProfileProvider).valueOrNull;
+                                if (rider?.status == 'BUSY') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'You have an active delivery. Complete or cancel it before going offline.',
+                                        style: GoogleFonts.inter(fontSize: 14),
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                      duration: const Duration(seconds: 4),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
                               setState(() {
                                 _isOnline = v;
                                 _togglingStatus = true;
