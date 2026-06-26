@@ -69,12 +69,8 @@ class RiderService {
   }
 
   Future<List<Map<String, dynamic>>> getAvailableJobs() async {
-    try {
-      final response = await _api.get(ApiEndpoints.riderJobs);
-      final jobs = response['jobs'] ?? response['data'] ?? [];
-      return (jobs as List).cast<Map<String, dynamic>>();
-    } catch (_) {
-      return [];
-    }
+    final response = await _api.get(ApiEndpoints.riderJobs);
+    final jobs = response['jobs'] ?? response['data'] ?? [];
+    return (jobs as List).cast<Map<String, dynamic>>();
   }
 }
