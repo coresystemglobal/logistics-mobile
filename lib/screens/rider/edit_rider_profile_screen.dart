@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/api/api_client.dart';
+import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/traka_button.dart';
 import '../../core/widgets/traka_input.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/rider_service.dart';
 
 class EditRiderProfileScreen extends ConsumerStatefulWidget {
   const EditRiderProfileScreen({super.key});
@@ -64,7 +65,7 @@ class _EditRiderProfileScreenState
       if (_phoneCtrl.text.trim().isNotEmpty)
         updates['phone'] = _phoneCtrl.text.trim();
 
-      await RiderService().updateProfile(updates);
+      await ApiClient.instance.patch(ApiEndpoints.updateMe, data: updates);
       await ref.read(authProvider.notifier).refreshUser();
 
       if (mounted) {

@@ -132,175 +132,136 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                   await ref.refresh(_activeJobsProvider.future);
                 },
                 color: AppColors.accent,
-                child: jobsAsync.when(
-                  loading: () => const Center(
-                    child: CircularProgressIndicator(color: AppColors.accent),
-                  ),
-                  error: (err, _) => Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.error_outline_rounded,
-                              color: AppColors.error, size: 32),
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Couldn\'t load jobs',
-                            style: GoogleFonts.inter(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            )),
-                        const SizedBox(height: 6),
-                        Text(err.toString(),
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              color: AppColors.textTertiary,
-                            )),
-                        const SizedBox(height: 24),
-                        OutlinedButton(
-                          onPressed: () => ref.refresh(_availableJobsProvider),
-                          child: const Text('Try again'),
-                        ),
-                      ],
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // ── Active delivery section (always shown) ──
+                    activeAsync.maybeWhen(
+                      data: (activeJobs) {
+                        if (activeJobs.isEmpty) return const SizedBox.shrink();
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('MY ACTIVE DELIVERY',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textTertiary,
+                                    letterSpacing: 0.6)),
+                            const SizedBox(height: 10),
+                            ...activeJobs.map((job) => _ActiveJobCard(job: job)),
+                            const SizedBox(height: 8),
+                          ],
+                        );
+                      },
+                      orElse: () => const SizedBox.shrink(),
                     ),
-                  ),
-                  data: (jobs) {
-                    if (jobs.isEmpty) {
-                      // Wait for rider status to load before showing offline/online message
-                      return riderAsync.when(
-                        loading: () => const Center(
+
+                    // ── Available jobs section ──
+                    jobsAsync.when(
+                      loading: () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
                           child: CircularProgressIndicator(color: AppColors.accent),
                         ),
-                        error: (_, __) => ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(32),
+                      ),
+                      error: (err, _) => Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const SizedBox(height: 60),
-                            const Center(
-                              child: Icon(Icons.search_off_rounded,
-                                  color: AppColors.textQuaternary, size: 48),
+                            Container(
+                              width: 64, height: 64,
+                              decoration: BoxDecoration(
+                                color: AppColors.error.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.error_outline_rounded,
+                                  color: AppColors.error, size: 32),
                             ),
                             const SizedBox(height: 16),
-                            Text('No jobs available',
-                                textAlign: TextAlign.center,
+                            Text('Couldn\'t load jobs',
                                 style: GoogleFonts.inter(
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.textPrimary)),
+                            const SizedBox(height: 6),
+                            Text(err.toString(),
+                                style: GoogleFonts.inter(
+                                    fontSize: 13,
+                                    color: AppColors.textTertiary)),
+                            const SizedBox(height: 24),
+                            OutlinedButton(
+                              onPressed: () => ref.refresh(_availableJobsProvider),
+                              child: const Text('Try again'),
+                            ),
                           ],
                         ),
-                        data: (rider) {
-                          final online = rider.isAvailable || rider.status == 'AVAILABLE';
-                          return ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.all(32),
-                            children: [
-                              const SizedBox(height: 60),
-                              Center(
-                                child: Container(
-                                  width: 80,
-                                  height: 80,
-                                  decoration: BoxDecoration(
-                                    color: online
-                                        ? AppColors.accentLight
-                                        : AppColors.bgTertiary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    online
-                                        ? Icons.search_off_rounded
-                                        : Icons.power_settings_new_rounded,
-                                    color: online
-                                        ? AppColors.accent
-                                        : AppColors.textQuaternary,
-                                    size: 40,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                online ? 'No jobs right now' : 'You\'re Offline',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                online
-                                    ? 'Stay online — new delivery requests will appear here.'
-                                    : 'Go online from your profile to start receiving delivery jobs.',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  color: AppColors.textTertiary,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }
-
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: jobs.length + 1, // +1 for active jobs header slot
-                      itemBuilder: (context, i) {
-                        // Slot 0: active delivery section
-                        if (i == 0) {
-                          return activeAsync.maybeWhen(
-                            data: (activeJobs) {
-                              if (activeJobs.isEmpty) return const SizedBox.shrink();
+                      ),
+                      data: (jobs) {
+                        if (jobs.isEmpty) {
+                          return riderAsync.when(
+                            loading: () => const SizedBox.shrink(),
+                            error: (_, __) => const SizedBox.shrink(),
+                            data: (rider) {
+                              final online = rider.isAvailable || rider.status == 'AVAILABLE';
                               return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: Text(
-                                      'MY ACTIVE DELIVERY',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.textTertiary,
-                                        letterSpacing: 0.6,
+                                  const SizedBox(height: 40),
+                                  Center(
+                                    child: Container(
+                                      width: 80, height: 80,
+                                      decoration: BoxDecoration(
+                                        color: online ? AppColors.accentLight : AppColors.bgTertiary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        online ? Icons.search_off_rounded : Icons.power_settings_new_rounded,
+                                        color: online ? AppColors.accent : AppColors.textQuaternary,
+                                        size: 40,
                                       ),
                                     ),
                                   ),
-                                  ...activeJobs.map((job) => _ActiveJobCard(job: job)),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    online ? 'No jobs right now' : 'You\'re Offline',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary),
+                                  ),
                                   const SizedBox(height: 8),
-                                  if (jobs.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: Text(
-                                        'AVAILABLE JOBS',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.textTertiary,
-                                          letterSpacing: 0.6,
-                                        ),
-                                      ),
-                                    ),
+                                  Text(
+                                    online
+                                        ? 'Stay online — new delivery requests will appear here.'
+                                        : 'Go online from your profile to start receiving delivery jobs.',
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        color: AppColors.textTertiary,
+                                        height: 1.5),
+                                  ),
                                 ],
                               );
                             },
-                            orElse: () => const SizedBox.shrink(),
                           );
                         }
-                        return _JobCard(job: jobs[i - 1]);
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('AVAILABLE JOBS',
+                                style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textTertiary,
+                                    letterSpacing: 0.6)),
+                            const SizedBox(height: 10),
+                            ...jobs.map((job) => _JobCard(job: job)),
+                          ],
+                        );
                       },
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
             ),

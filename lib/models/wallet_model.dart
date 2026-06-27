@@ -18,10 +18,10 @@ class WalletModel {
   factory WalletModel.fromJson(Map<String, dynamic> json) => WalletModel(
         id: json['id']?.toString() ?? '',
         userId: json['user_id']?.toString() ?? json['userId']?.toString() ?? '',
-        balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
-        creditLimit: (json['credit_limit'] ?? json['creditLimit'] as num?)
-                ?.toDouble() ??
-            0.0,
+        balance: num.tryParse(json['balance']?.toString() ?? '')?.toDouble() ?? 0.0,
+        creditLimit: num.tryParse(
+              (json['credit_limit'] ?? json['creditLimit'])?.toString() ?? ''
+            )?.toDouble() ?? -2000.0,
         isSuspended: json['is_suspended'] ?? json['isSuspended'] ?? false,
         updatedAt: json['updated_at'] != null
             ? DateTime.tryParse(json['updated_at'])
@@ -52,11 +52,11 @@ class WalletTransactionModel {
       WalletTransactionModel(
         id: json['id']?.toString() ?? '',
         type: json['type'] ?? 'CREDIT',
-        amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+        amount: num.tryParse(json['amount']?.toString() ?? '')?.toDouble() ?? 0.0,
         description: json['description'],
-        referenceId: json['reference_id']?.toString(),
-        createdAt: json['created_at'] != null
-            ? DateTime.tryParse(json['created_at'])
+        referenceId: json['reference_id']?.toString() ?? json['reference']?.toString(),
+        createdAt: (json['created_at'] ?? json['createdAt']) != null
+            ? DateTime.tryParse((json['created_at'] ?? json['createdAt']).toString())
             : null,
       );
 

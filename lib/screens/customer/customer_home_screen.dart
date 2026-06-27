@@ -7,11 +7,27 @@ import '../../core/widgets/delivery_card.dart';
 import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/package_service.dart';
+import '../../services/wallet_service.dart';
+import '../../services/referral_service.dart';
 import '../../models/package_model.dart';
 
 final _customerPackagesProvider =
     FutureProvider.autoDispose<List<PackageModel>>(
   (ref) => PackageService().getMyPackages(limit: 5),
+);
+
+final _walletBalanceProvider = FutureProvider.autoDispose<double>(
+  (_) async {
+    final wallet = await WalletService().getBalance();
+    return wallet.balance;
+  },
+);
+
+final _referralStatsProvider = FutureProvider.autoDispose<int>(
+  (_) async {
+    final stats = await ReferralService().getStats();
+    return stats.totalReferrals;
+  },
 );
 
 String _greeting() {
@@ -50,6 +66,8 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final packagesAsync = ref.watch(_customerPackagesProvider);
+    final walletAsync = ref.watch(_walletBalanceProvider);
+    final referralAsync = ref.watch(_referralStatsProvider);
     final firstName = authState.user?.firstName ?? 'there';
 
     return Scaffold(
@@ -136,15 +154,23 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                         iconColor: AppColors.accent,
                       ),
                       const SizedBox(width: 10),
-                      const _StatCard(
+                      _StatCard(
                         label: 'Wallet Balance',
-                        value: '₦12,400',
+                        value: walletAsync.when(
+                          data: (b) => '₦${b.toStringAsFixed(0)}',
+                          loading: () => '—',
+                          error: (_, __) => '₦0',
+                        ),
                         valueColor: AppColors.success,
                       ),
                       const SizedBox(width: 10),
-                      const _StatCard(
+                      _StatCard(
                         label: 'Referral Points',
-                        value: '340',
+                        value: referralAsync.when(
+                          data: (pts) => '$pts',
+                          loading: () => '—',
+                          error: (_, __) => '0',
+                        ),
                         icon: Icons.star_rounded,
                         iconColor: AppColors.warning,
                       ),
