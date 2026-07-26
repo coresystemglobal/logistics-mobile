@@ -402,6 +402,15 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                               context.push('/customer/pending-delivery/${pkg.id}');
                             } else if (status == 'CANCELLED' && pkg.id.isNotEmpty) {
                               context.push('/customer/pending-delivery/${pkg.id}');
+                            } else if (status == 'DELIVERED' && pkg.id.isNotEmpty) {
+                              final rider = pkg.rider;
+                              context.push(
+                                '/customer/delivery-complete/${pkg.id}'
+                                '?riderId=${rider?['id'] ?? ''}'
+                                '&riderName=${Uri.encodeComponent(rider?['name'] ?? 'Rider')}'
+                                '&riderRating=${rider?['rating'] ?? 0}'
+                                '&recipientName=${Uri.encodeComponent(pkg.deliveryAddress)}',
+                              );
                             } else if (pkg.trackingNumber != null &&
                                 pkg.trackingNumber!.isNotEmpty) {
                               context.push(

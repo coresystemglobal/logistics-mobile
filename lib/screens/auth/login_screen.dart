@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
 import '../../core/widgets/traka_input.dart';
 import '../../providers/auth_provider.dart';
 
@@ -64,6 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.bgPrimary,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Atmospheric glows
@@ -93,17 +93,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: MediaQuery.sizeOf(context).height -
-                      MediaQuery.paddingOf(context).top,
-                ),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 48),
@@ -224,59 +217,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
 
-                          // Divider
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 32),
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Divider(
-                                      color: AppColors.separator,
-                                      thickness: 0.5),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
-                                  child: Text(
-                                    'or continue with',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: AppColors.textQuaternary,
-                                    ),
-                                  ),
-                                ),
-                                const Expanded(
-                                  child: Divider(
-                                      color: AppColors.separator,
-                                      thickness: 0.5),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // Divider + social buttons removed (Apple/Google sign-in not yet supported)
 
-                          // Social buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _SocialButton(
-                                  label: 'Apple',
-                                  icon: Icons.apple_rounded,
-                                  onTap: () {},
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: _SocialButton(
-                                  label: 'Google',
-                                  icon: Icons.g_mobiledata_rounded,
-                                  onTap: () {},
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const Spacer(),
+                          const SizedBox(height: 32),
                           // Footer
                           Padding(
                             padding:
@@ -312,55 +255,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ],
                       ),
-                    ),
-                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _SocialButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.bgPrimary,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.separator, width: 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 24, color: AppColors.textPrimary),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
-            ),
           ],
-        ),
       ),
     );
   }
