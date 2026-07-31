@@ -432,14 +432,14 @@ class _MapArea extends StatelessWidget {
               userAgentPackageName: 'com.traka.mobile',
               maxZoom: 19,
             ),
-            MarkerLayer(
+            const MarkerLayer(
               markers: [
                 // Pickup marker
                 Marker(
-                  point: const LatLng(_defaultLat, _defaultLng),
+                  point: LatLng(_defaultLat, _defaultLng),
                   width: 48,
                   height: 48,
-                  child: const Icon(Icons.location_on_rounded,
+                  child: Icon(Icons.location_on_rounded,
                       color: AppColors.accent, size: 40),
                 ),
               ],

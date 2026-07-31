@@ -80,11 +80,11 @@ class DeliveryCompleteScreen extends ConsumerWidget {
     super.key,
     required this.packageId,
     required this.riderId,
-    this.riderName = 'Emeka Obi',
-    this.riderRating = 4.8,
-    this.recipientName = 'Ada Okafor',
-    this.deliveryCode = '8274',
-    this.deliveryTime = '5:47 PM',
+    this.riderName = 'Your Rider',
+    this.riderRating = 0,
+    this.recipientName = '',
+    this.deliveryCode = '',
+    this.deliveryTime = '',
   });
 
   @override
