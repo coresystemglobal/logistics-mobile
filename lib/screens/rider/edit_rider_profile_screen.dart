@@ -58,12 +58,15 @@ class _EditRiderProfileScreenState
     setState(() => _saving = true);
     try {
       final updates = <String, dynamic>{};
-      if (_firstNameCtrl.text.trim().isNotEmpty)
+      if (_firstNameCtrl.text.trim().isNotEmpty) {
         updates['first_name'] = _firstNameCtrl.text.trim();
-      if (_surnameCtrl.text.trim().isNotEmpty)
+      }
+      if (_surnameCtrl.text.trim().isNotEmpty) {
         updates['surname'] = _surnameCtrl.text.trim();
-      if (_phoneCtrl.text.trim().isNotEmpty)
+      }
+      if (_phoneCtrl.text.trim().isNotEmpty) {
         updates['phone'] = _phoneCtrl.text.trim();
+      }
 
       await ApiClient.instance.patch(ApiEndpoints.updateMe, data: updates);
       await ref.read(authProvider.notifier).refreshUser();

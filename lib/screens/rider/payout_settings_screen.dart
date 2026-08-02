@@ -192,7 +192,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            _SectionHeader(label: 'Bank Account'),
+            const _SectionHeader(label: 'Bank Account'),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
@@ -209,7 +209,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _FieldLabel('Bank'),
+                  const _FieldLabel('Bank'),
                   const SizedBox(height: 6),
                   GestureDetector(
                     onTap: () => _showBankPicker(context),
@@ -238,7 +238,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  _FieldLabel('Account Number'),
+                  const _FieldLabel('Account Number'),
                   const SizedBox(height: 6),
                   _InputField(
                     controller: _accountNumberCtrl,
@@ -246,7 +246,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 14),
-                  _FieldLabel('Account Name'),
+                  const _FieldLabel('Account Name'),
                   const SizedBox(height: 6),
                   _InputField(
                     controller: _accountNameCtrl,
@@ -258,7 +258,7 @@ class _PayoutSettingsScreenState extends State<PayoutSettingsScreen> {
             ),
             const SizedBox(height: 24),
 
-            _SectionHeader(label: 'Payout Schedule'),
+            const _SectionHeader(label: 'Payout Schedule'),
             const SizedBox(height: 8),
             Container(
               decoration: BoxDecoration(

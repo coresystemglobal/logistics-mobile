@@ -277,7 +277,6 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
   @override
   Widget build(BuildContext context) {
     final riderFound = _state == _SearchState.riderFound;
-    final noRider = _state == _SearchState.noRider;
     final scheduled = _state == _SearchState.scheduled;
     final remaining = (_timeoutSeconds - _elapsedSeconds).clamp(0, _timeoutSeconds);
 

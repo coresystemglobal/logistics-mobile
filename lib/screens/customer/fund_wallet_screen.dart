@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../services/wallet_service.dart';
 
@@ -41,18 +42,24 @@ class _FundNotifier extends StateNotifier<_FundState> {
   Future<void> proceed(BuildContext context) async {
     state = state.copyWith(loading: true, error: null);
     try {
-      await WalletService().initializeFunding(
+      final result = await WalletService().initializeFunding(
         amount: state.amount,
         provider: state.provider,
       );
       state = state.copyWith(loading: false);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Redirecting to payment gateway...')),
-        );
+      final url = result['authorization_url'] ?? result['data']?['authorization_url'];
+      if (url != null && context.mounted) {
+        final uri = Uri.parse(url as String);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          state = state.copyWith(error: 'Could not open payment page');
+        }
+      } else if (context.mounted) {
+        state = state.copyWith(error: 'No payment URL returned');
       }
     } catch (e) {
-      state = state.copyWith(loading: false, error: e.toString());
+      state = state.copyWith(loading: false, error: e.toString().replaceAll('Exception: ', ''));
     }
   }
 }

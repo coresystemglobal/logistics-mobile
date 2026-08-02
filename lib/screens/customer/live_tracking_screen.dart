@@ -68,15 +68,26 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
       if (lat == null || lng == null) return;
 
       final newPos = LatLng(lat, lng);
+      final newStatus = (d['package_status'] as String?) ?? _status;
       setState(() {
         _riderPosition = newPos;
-        _status = (d['package_status'] as String?)
-                ?.replaceAll('_', ' ') ??
-            _status;
+        _status = newStatus.replaceAll('_', ' ');
       });
 
-      // Keep the camera centred on the rider.
       _mapController.move(newPos, _mapController.camera.zoom);
+
+      // Navigate to delivery complete when rider confirms delivery
+      if (newStatus == 'DELIVERED' && mounted) {
+        final pkg = _package;
+        final rider = pkg?.rider;
+        context.go(
+          '/customer/delivery-complete/${widget.packageId}'
+          '?riderId=${rider?['id'] ?? ''}'
+          '&riderName=${Uri.encodeComponent(rider?['name'] ?? 'Rider')}'
+          '&riderRating=${rider?['rating'] ?? 0}'
+          '&recipientName=${Uri.encodeComponent(pkg?.recipientName ?? '')}',
+        );
+      }
     });
 
     rt.on('eta_update', (data) {

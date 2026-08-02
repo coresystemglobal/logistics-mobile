@@ -56,7 +56,7 @@ class EarningsScreen extends ConsumerWidget {
                   children: [
                     // Balance card
                     walletAsync.when(
-                      loading: () => _Skeleton(height: 160),
+                      loading: () => const _Skeleton(height: 160),
                       error: (_, __) => _errorCard('Could not load balance',
                           () => ref.invalidate(_earningsProvider)),
                       data: (wallet) => Container(
@@ -120,9 +120,9 @@ class EarningsScreen extends ConsumerWidget {
 
                     // Stats derived from real transactions
                     txAsync.when(
-                      loading: () => Row(children: [
+                      loading: () => const Row(children: [
                         Expanded(child: _Skeleton(height: 80)),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(child: _Skeleton(height: 80)),
                       ]),
                       error: (_, __) => const SizedBox.shrink(),
@@ -181,7 +181,7 @@ class EarningsScreen extends ConsumerWidget {
                     txAsync.when(
                       loading: () => Column(
                         children: List.generate(
-                            3, (_) => _Skeleton(height: 70, bottom: 10)),
+                            3, (_) => const _Skeleton(height: 70, bottom: 10)),
                       ),
                       error: (e, _) => Center(
                         child: Padding(

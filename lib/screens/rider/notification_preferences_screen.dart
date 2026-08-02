@@ -47,7 +47,7 @@ class _NotificationPreferencesScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SectionHeader(label: 'Delivery Alerts'),
+            const _SectionHeader(label: 'Delivery Alerts'),
             const SizedBox(height: 8),
             _ToggleGroup(items: [
               _ToggleItem(
@@ -66,7 +66,7 @@ class _NotificationPreferencesScreenState
               ),
             ]),
             const SizedBox(height: 24),
-            _SectionHeader(label: 'Payments'),
+            const _SectionHeader(label: 'Payments'),
             const SizedBox(height: 8),
             _ToggleGroup(items: [
               _ToggleItem(
@@ -85,7 +85,7 @@ class _NotificationPreferencesScreenState
               ),
             ]),
             const SizedBox(height: 24),
-            _SectionHeader(label: 'Sound & Vibration'),
+            const _SectionHeader(label: 'Sound & Vibration'),
             const SizedBox(height: 8),
             _ToggleGroup(items: [
               _ToggleItem(
@@ -104,7 +104,7 @@ class _NotificationPreferencesScreenState
               ),
             ]),
             const SizedBox(height: 24),
-            _SectionHeader(label: 'Other Channels'),
+            const _SectionHeader(label: 'Other Channels'),
             const SizedBox(height: 8),
             _ToggleGroup(items: [
               _ToggleItem(

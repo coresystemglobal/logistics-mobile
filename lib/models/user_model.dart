@@ -41,6 +41,18 @@ class UserModel {
   String get fullName => '$firstName $surname'.trim();
   String get businessName => fullName;
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'email': email,
+        'first_name': firstName,
+        'surname': surname,
+        'phone': phone,
+        'role': role,
+        'type': type,
+        'profile_photo': profilePhoto,
+        'email_verified': emailVerified,
+      };
+
   bool get isRider => role == 'RIDER';
   bool get isUser => role == 'USER';
   bool get isBusinessOwner => role == 'BUSINESS_OWNER';

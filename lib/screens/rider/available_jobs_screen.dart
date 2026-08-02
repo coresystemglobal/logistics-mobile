@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/api_endpoints.dart';
 import '../../core/api/api_client.dart';
 import '../../core/widgets/welcome_walkthrough.dart';
 import '../../providers/auth_provider.dart';
@@ -191,7 +190,7 @@ class _AvailableJobsScreenState extends ConsumerState<AvailableJobsScreen> {
                                     color: AppColors.textTertiary)),
                             const SizedBox(height: 24),
                             OutlinedButton(
-                              onPressed: () => ref.refresh(_availableJobsProvider),
+                              onPressed: () => ref.refresh(_availableJobsProvider.future),
                               child: const Text('Try again'),
                             ),
                           ],

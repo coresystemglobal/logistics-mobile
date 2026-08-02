@@ -90,10 +90,12 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
         );
       }
     } catch (e) {
-      if (mounted) setState(() {
+      if (mounted) {
+        setState(() {
         _error = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
       });
+      }
     }
   }
 

@@ -140,7 +140,9 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
       permission = await Geolocator.requestPermission();
     }
     if (permission == LocationPermission.deniedForever ||
-        permission == LocationPermission.denied) return;
+        permission == LocationPermission.denied) {
+      return;
+    }
 
     await _reportLocation();
     _locationTimer = Timer.periodic(

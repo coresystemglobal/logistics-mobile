@@ -88,8 +88,8 @@ class _RebookScreenState extends State<RebookScreen> {
         paymentMethod: _paymentMethod,
       );
       if (!mounted) return;
-      final id = newPkg.id.isNotEmpty ? newPkg.id : null;
-      if (id == null) { context.go('/customer/home'); return; }
+      final id = newPkg.id;
+      if (id.isEmpty) { context.go('/customer/home'); return; }
       final tn = newPkg.trackingNumber;
       final uri = '/customer/booking-confirm/$id';
       final params = [

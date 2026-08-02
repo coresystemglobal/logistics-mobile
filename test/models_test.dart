@@ -11,7 +11,7 @@ void main() {
         'role': 'USER',
         'type': 'USER',
         'first_name': 'John',
-        'last_name': 'Doe',
+        'surname': 'Doe',
         'phone': '+1234567890',
       };
 
@@ -21,7 +21,7 @@ void main() {
       expect(user.email, 'test@example.com');
       expect(user.role, 'USER');
       expect(user.firstName, 'John');
-      expect(user.lastName, 'Doe');
+      expect(user.surname, 'Doe');
     });
 
     test('toJson creates valid JSON', () {
@@ -31,7 +31,7 @@ void main() {
         role: 'USER',
         type: 'USER',
         firstName: 'John',
-        lastName: 'Doe',
+        surname: 'Doe',
         phone: '+1234567890',
       );
 
