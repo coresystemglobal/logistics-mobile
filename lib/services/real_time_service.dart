@@ -37,10 +37,29 @@ class RealTimeService {
     _socket!.onDisconnect((_) {});
 
     _socket!.onAny((event, data) {
-      if (data is Map) {
-        _controller.add({'event': event, ...data.cast<String, dynamic>()});
+      final dataMap = data is Map ? data : {'data': data};
+      
+      // 1. Handle Live Location Update Event
+      if (event == 'rider-location-update' && dataMap['data'] != null) {
+        final locationData = dataMap['data'] as Map<String, dynamic>?;
+        if (locationData != null) {
+          _controller.add({
+            'event': 'location_update',
+            'packageId': dataMap['packageId'] ?? 'unknown',
+            'latitude': locationData['latitude'],
+            'longitude': locationData['longitude'],
+            'timestamp': locationData['timestamp'],
+            'status': locationData['package_status'],
+          });
+          return;
+        }
+      }
+
+      // 2. Handle general events
+      if (dataMap['data'] != null) {
+        _controller.add({'event': event, 'data': dataMap['data']});
       } else {
-        _controller.add({'event': event, 'data': data});
+        _controller.add({'event': event, ...dataMap});
       }
     });
 
