@@ -33,6 +33,7 @@ class AuthService {
     required String email,
     required String phone,
     required String password,
+    String? referralCode,
   }) async {
     final response = await _api.post(ApiEndpoints.registerCustomer, data: {
       'first_name': firstName,
@@ -41,6 +42,8 @@ class AuthService {
       'phone': phone,
       'password': password,
       'terms_accepted': true,
+      if (referralCode != null && referralCode.isNotEmpty)
+        'referral_code': referralCode,
     });
     final accessToken = response['access_token'] ?? response['token'];
     final refreshToken = response['refresh_token'];

@@ -83,16 +83,16 @@ class ReferralScreen extends ConsumerWidget {
                               style: TextStyle(fontSize: 36)),
                           const SizedBox(height: 12),
                           Text(
-                            'Earn ₦500 per referral',
+                            'Give 20% off their first 3 deliveries',
                             style: GoogleFonts.inter(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            'Share your link. When a friend signs up and places their first order, you both earn ₦500.',
+                            'Share your link. When a friend signs up, they get 20% off their first 3 delivery fees.',
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               color: Colors.white.withValues(alpha: 0.85),
@@ -238,9 +238,11 @@ class ReferralScreen extends ConsumerWidget {
                               width: double.infinity,
                               height: 52,
                               child: ElevatedButton.icon(
-                                onPressed: () => Share.share(
-                                  'Use my TRAKA referral link to get ₦500 on your first delivery! $link',
-                                  subject: 'Join TRAKA — get ₦500 free',
+                                onPressed: () => SharePlus.instance.share(
+                                  ShareParams(
+                                    text: 'Use my TRAKA referral link to get 20% off your first 3 deliveries! $link',
+                                    subject: 'Join TRAKA — get 20% off your first deliveries',
+                                  ),
                                 ),
                                 icon: const Icon(Icons.share_rounded,
                                     size: 20),
@@ -270,7 +272,7 @@ class ReferralScreen extends ConsumerWidget {
 
                     // Stats
                     Text(
-                      'Your Earnings',
+                      'Your Referrals',
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -306,10 +308,11 @@ class ReferralScreen extends ConsumerWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _StatTile(
-                              label: 'Bonus Earned',
-                              value:
-                                  '₦${stats.totalBonusEarned.toStringAsFixed(0)}',
-                              icon: Icons.wallet_outlined,
+                              label: 'Friend Discount',
+                              value: stats.discountPercent != null
+                                  ? '${stats.discountPercent!.toStringAsFixed(0)}%'
+                                  : '20%',
+                              icon: Icons.percent_rounded,
                               iconColor: AppColors.warning,
                             ),
                           ),
@@ -342,9 +345,9 @@ class ReferralScreen extends ConsumerWidget {
                     ),
                     const _HowItWorksStep(
                       step: '3',
-                      title: 'Both earn ₦500',
+                      title: 'Friend saves 20%',
                       description:
-                          'After their first delivery, you both get credited.',
+                          'They get 20% off their first 3 delivery fees.',
                       last: true,
                     ),
                   ],

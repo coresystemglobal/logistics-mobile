@@ -26,11 +26,15 @@ class ReferralStats {
   final int totalReferrals;
   final int successfulReferrals;
   final double totalBonusEarned;
+  final double? discountPercent;
+  final int? discountOrdersRemaining;
 
   const ReferralStats({
     required this.totalReferrals,
     required this.successfulReferrals,
     required this.totalBonusEarned,
+    this.discountPercent,
+    this.discountOrdersRemaining,
   });
 
   factory ReferralStats.fromJson(Map<String, dynamic> json) => ReferralStats(
@@ -46,5 +50,11 @@ class ReferralStats {
                     json['totalBonusEarned'] as num?)
                 ?.toDouble() ??
             0.0,
+        discountPercent: (json['discount_percent'] ??
+                json['discountPercent'] as num?)
+            ?.toDouble(),
+        discountOrdersRemaining: (json['discount_orders_remaining'] ??
+                json['discountOrdersRemaining'] as num?)
+            ?.toInt(),
       );
 }

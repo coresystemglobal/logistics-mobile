@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/rider_vehicle_marker.dart';
 import '../../models/package_model.dart';
 import '../../services/package_service.dart';
 import '../../services/real_time_service.dart';
@@ -136,37 +137,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                       point: _riderPosition!,
                       width: 48,
                       height: 48,
-                      child: AnimatedBuilder(
-                        animation: _pulseCtrl,
-                        builder: (_, __) => Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.iosBlue
-                                .withValues(alpha: 0.12 + 0.08 * _pulseCtrl.value),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: const BoxDecoration(
-                                color: AppColors.iosBlue,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Color(0x4D007AFF),
-                                    blurRadius: 8,
-                                    spreadRadius: 2,
-                                  )
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.local_shipping_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
-                          ),
-                        ),
+                      child: RiderVehicleMarker(
+                        vehicleType: _package?.rider?['vehicle_type'],
+                        pulse: _pulseCtrl,
+                        color: AppColors.iosBlue,
                       ),
                     ),
                   ],
@@ -357,21 +331,33 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen>
                                   color: AppColors.bgSecondary,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(
-                                  Icons.person_rounded,
+                                child: Icon(
+                                  riderVehicleIcon(_package?.rider?['vehicle_type']),
                                   size: 28,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(width: 14),
                               Expanded(
-                                child: Text(
-                                  _package != null ? 'Your Rider' : '—',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _package != null ? 'Your Rider' : '—',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    if (_package?.rider?['vehicle_type'] != null)
+                                      const SizedBox(height: 4),
+                                    if (_package?.rider?['vehicle_type'] != null)
+                                      RiderVehicleBadge(
+                                        vehicleType: _package?.rider?['vehicle_type'],
+                                        color: AppColors.iosBlue,
+                                      ),
+                                  ],
                                 ),
                               ),
                             ],

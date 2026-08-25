@@ -20,7 +20,7 @@ class _AppHttpOverrides extends HttpOverrides {
     return super.createHttpClient(context)
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
         // Only trust your own domain
-        return host.contains('onrender.com');
+        return host.contains('onrender.com') || host.contains('fly.dev');
       };
   }
 }

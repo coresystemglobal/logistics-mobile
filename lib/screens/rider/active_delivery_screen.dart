@@ -14,10 +14,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/widgets/rider_vehicle_marker.dart';
 import '../../core/widgets/traka_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/package_service.dart';
+import '../../services/rider_service.dart';
 import '../../models/package_model.dart';
+import '../../models/rider_model.dart';
+
+final _riderProfileProvider = FutureProvider.autoDispose<RiderModel>(
+  (_) => RiderService().getProfile(),
+);
 
 class ActiveDeliveryScreen extends ConsumerStatefulWidget {
   final String packageId;
@@ -230,6 +237,11 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
 
     final pkg = _package!;
 
+    final vehicleType = ref.watch(_riderProfileProvider).maybeWhen(
+          data: (r) => r.vehicleType,
+          orElse: () => null,
+        );
+
     return Scaffold(
       body: Stack(
         children: [
@@ -283,33 +295,11 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
                     point: _riderPosition!,
                     width: 52,
                     height: 52,
-                    child: AnimatedBuilder(
-                      animation: _pulseCtrl,
-                      builder: (_, __) => Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.accent
-                              .withValues(alpha: 0.15 + 0.1 * _pulseCtrl.value),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 32,
-                            height: 32,
-                            decoration: const BoxDecoration(
-                              color: AppColors.accent,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                    color: Color(0x40FF6B00),
-                                    blurRadius: 8,
-                                    spreadRadius: 2)
-                              ],
-                            ),
-                            child: const Icon(Icons.delivery_dining_rounded,
-                                color: Colors.white, size: 18),
-                          ),
-                        ),
-                      ),
+                    child: RiderVehicleMarker(
+                      vehicleType: vehicleType,
+                      pulse: _pulseCtrl,
+                      color: AppColors.accent,
+                      innerSize: 32,
                     ),
                   ),
               ]),
@@ -422,6 +412,10 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
                     ),
                     child: Row(
                       children: [
+                        _InfoChip(
+                            icon: riderVehicleIcon(vehicleType),
+                            label: riderVehicleLabel(vehicleType)),
+                        const SizedBox(width: 16),
                         _InfoChip(
                             icon: Icons.inventory_2_outlined,
                             label: pkg.packageSize ?? 'SMALL'),

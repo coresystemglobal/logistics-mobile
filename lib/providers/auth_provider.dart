@@ -81,6 +81,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String phone,
     required String password,
+    String? referralCode,
   }) async {
     await _authService.registerCustomer(
       firstName: firstName,
@@ -88,6 +89,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       email: email,
       phone: phone,
       password: password,
+      referralCode: referralCode,
     );
     // Tokens are saved but state stays unauthenticated until email is verified.
   }

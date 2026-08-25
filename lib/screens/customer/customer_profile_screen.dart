@@ -302,7 +302,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                         icon: Icons.share_rounded,
                         label: 'Referral Code',
                         trailing: Text(
-                          'GET₦500',
+                          '20% OFF',
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,

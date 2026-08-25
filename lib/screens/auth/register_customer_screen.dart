@@ -24,6 +24,7 @@ class _RegisterCustomerScreenState
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _referralCtrl = TextEditingController();
   bool _isLoading = false;
   bool _termsAccepted = false;
   bool _termsError = false;
@@ -43,6 +44,7 @@ class _RegisterCustomerScreenState
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
     _passwordCtrl.dispose();
+    _referralCtrl.dispose();
     super.dispose();
   }
 
@@ -61,6 +63,9 @@ class _RegisterCustomerScreenState
             email: email,
             phone: _normalizePhone(_phoneCtrl.text.trim()),
             password: _passwordCtrl.text,
+            referralCode: _referralCtrl.text.trim().isNotEmpty
+                ? _referralCtrl.text.trim()
+                : null,
           );
       if (mounted) {
         context.go('/auth/verify-email?email=${Uri.encodeComponent(email)}');
@@ -208,6 +213,15 @@ class _RegisterCustomerScreenState
                           return null;
                         },
                         onSubmitted: (_) => _register(),
+                      ),
+                      const SizedBox(height: 14),
+
+                      TrakaInput(
+                        hint: 'Referral code (optional)',
+                        textInputAction: TextInputAction.next,
+                        controller: _referralCtrl,
+                        prefixIcon: const Icon(Icons.card_giftcard_outlined,
+                            size: 22),
                       ),
                       const SizedBox(height: 12),
 
