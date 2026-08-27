@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterRiderScreen extends ConsumerStatefulWidget {
@@ -161,7 +161,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Join TRAKA\nas a Rider.',
+                        'Join OPRIGHT\nas a Rider.',
                         style: GoogleFonts.inter(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
@@ -183,7 +183,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: TrakaInput(
+                            child: OprightInput(
                               hint: 'First name',
                               controller: _firstNameCtrl,
                               validator: (v) =>
@@ -192,7 +192,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: TrakaInput(
+                            child: OprightInput(
                               hint: 'Surname',
                               controller: _surnameCtrl,
                               validator: (v) =>
@@ -202,7 +202,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Email address',
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
@@ -215,7 +215,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Phone number',
                         controller: _phoneCtrl,
                         keyboardType: TextInputType.phone,
@@ -225,7 +225,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Password',
                         controller: _passwordCtrl,
                         obscureText: true,
@@ -305,7 +305,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       ),
                       if (_vehicleType != 'BICYCLE') ...[
                         const SizedBox(height: 14),
-                        TrakaInput(
+                        OprightInput(
                           hint: 'License number',
                           controller: _licenseCtrl,
                           prefixIcon: const Icon(Icons.badge_outlined,
@@ -316,7 +316,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                               : null,
                         ),
                         const SizedBox(height: 14),
-                        TrakaInput(
+                        OprightInput(
                           hint: 'Vehicle plate number',
                           controller: _vehiclePlateCtrl,
                           prefixIcon: const Icon(Icons.directions_car_outlined,
@@ -330,7 +330,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       const SizedBox(height: 14),
 
                       // Referral
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Referral code (optional)',
                         controller: _referralCtrl,
                         prefixIcon: const Icon(Icons.card_giftcard_outlined,
@@ -425,7 +425,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                       ],
                       const SizedBox(height: 24),
 
-                      TrakaButton(
+                      OprightButton(
                         label: 'Create Rider Account',
                         loading: _isLoading,
                         onPressed: _register,

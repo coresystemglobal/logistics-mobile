@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../models/package_model.dart';
 import '../../services/package_service.dart';
 
@@ -411,7 +411,7 @@ class _PendingDeliveryDetailScreenState
                   16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
               child: Column(
                 children: [
-                  TrakaButton(
+                  OprightButton(
                     label: 'Search for Rider',
                     icon: const Icon(Icons.search_rounded,
                         color: Colors.white, size: 20),
@@ -419,9 +419,9 @@ class _PendingDeliveryDetailScreenState
                         context.go('/customer/finding-rider/${widget.packageId}'),
                   ),
                   const SizedBox(height: 10),
-                  TrakaButton(
+                  OprightButton(
                     label: 'Cancel Delivery',
-                    variant: TrakaBtnVariant.danger,
+                    variant: OprightBtnVariant.danger,
                     loading: _cancelling,
                     onPressed: _cancelling ? null : _cancel,
                   ),
@@ -432,7 +432,7 @@ class _PendingDeliveryDetailScreenState
             Padding(
               padding: EdgeInsets.fromLTRB(
                   16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
-              child: TrakaButton(
+              child: OprightButton(
                 label: 'Rebook Delivery',
                 icon: const Icon(Icons.refresh_rounded,
                     color: Colors.white, size: 20),

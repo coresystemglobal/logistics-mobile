@@ -8,9 +8,9 @@ typedef _Step = ({String emoji, String title, String description});
 const _customerSteps = <_Step>[
   (
     emoji: '🎉',
-    title: 'Welcome to TRAKA!',
+    title: 'Welcome to Opright!',
     description:
-        "You're all set. TRAKA connects you with riders who deliver your packages fast, anywhere in Nigeria.",
+        "You're all set. OPRIGHT connects you with riders who deliver your packages fast, anywhere in Nigeria.",
   ),
   (
     emoji: '📦',
@@ -31,7 +31,7 @@ const _riderSteps = <_Step>[
     emoji: '🏍️',
     title: 'Welcome to the team!',
     description:
-        "You're now part of the TRAKA rider network. Start earning deliveries on your own schedule.",
+        "You're now part of the Opright rider network. Start earning deliveries on your own schedule.",
   ),
   (
     emoji: '🟢',
@@ -50,7 +50,7 @@ const _riderSteps = <_Step>[
 const _businessSteps = <_Step>[
   (
     emoji: '🏢',
-    title: 'Welcome to TRAKA Business!',
+    title: 'Welcome to Opright Business!',
     description:
         'Ship smarter, scale faster. Your business dashboard is ready to go.',
   ),
@@ -88,7 +88,7 @@ Future<void> showWelcomeWalkthrough(
   String firstName = '',
 }) async {
   final prefs = await SharedPreferences.getInstance();
-  final key = 'traka_welcomed_$userId';
+  final key = 'opright_welcomed_$userId';
   if (prefs.getBool(key) == true) return;
   await prefs.setBool(key, true);
 

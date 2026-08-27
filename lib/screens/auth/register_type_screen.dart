@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 
 class RegisterTypeScreen extends StatefulWidget {
   const RegisterTypeScreen({super.key});
@@ -101,7 +101,7 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen> {
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      'Join TRAKA',
+                      'Join OPRIGHT',
                       style: GoogleFonts.inter(
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
@@ -111,7 +111,7 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'How will you use TRAKA?',
+                      'How will you use OPRIGHT?',
                       style: GoogleFonts.inter(
                         fontSize: 17,
                         color: AppColors.textTertiary,
@@ -166,7 +166,7 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen> {
                   AnimatedOpacity(
                     opacity: _selectedType != null ? 1.0 : 0.45,
                     duration: const Duration(milliseconds: 200),
-                    child: TrakaButton(
+                    child: OprightButton(
                       label: 'Continue',
                       onPressed: _selectedType != null ? _continue : null,
                     ),

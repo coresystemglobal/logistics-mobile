@@ -84,7 +84,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'TRAKA',
+                    'OPRIGHT',
                     style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 42,

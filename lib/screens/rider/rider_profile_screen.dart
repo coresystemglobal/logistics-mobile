@@ -61,7 +61,7 @@ class _RiderProfileScreenState extends ConsumerState<RiderProfileScreen> {
               child: Row(
                 children: [
                   Text(
-                    'TRAKA',
+                    'OPRIGHT',
                     style: GoogleFonts.inter(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,

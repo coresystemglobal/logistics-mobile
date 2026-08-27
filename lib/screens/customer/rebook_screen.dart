@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../models/package_model.dart';
 import '../../models/delivery_models.dart';
 import '../../services/package_service.dart';
@@ -379,7 +379,7 @@ class _RebookScreenState extends State<RebookScreen> {
                   const SizedBox(height: 8),
                   for (final opt in [
                     ('WALLET', Icons.account_balance_wallet_outlined,
-                        'TRAKA Wallet', 'Deducted from wallet balance'),
+                        'Opright Wallet', 'Deducted from wallet balance'),
                     ('BANK_TRANSFER', Icons.account_balance_rounded,
                         'Bank Transfer on Delivery',
                         'Pay via transfer when package arrives'),
@@ -452,7 +452,7 @@ class _RebookScreenState extends State<RebookScreen> {
           Padding(
             padding: EdgeInsets.fromLTRB(
                 16, 0, 16, MediaQuery.of(context).padding.bottom + 16),
-            child: TrakaButton(
+            child: OprightButton(
               label: 'Confirm & Book',
               loading: _submitting,
               onPressed: (_submitting || _quoting || _quote == null)

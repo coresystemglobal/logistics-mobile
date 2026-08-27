@@ -43,13 +43,13 @@ class TermsOfServiceScreen extends StatelessWidget {
               number: '1',
               title: 'Acceptance of Terms',
               body:
-                  'By creating an account or using the TRAKA platform, you confirm that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, you may not use our services.',
+                  'By creating an account or using the Opright platform, you confirm that you have read, understood, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree, you may not use our services.',
             ),
             const _Section(
               number: '2',
               title: 'Description of Service',
               body:
-                  'TRAKA is a logistics and package-tracking platform that connects senders (customers and businesses) with delivery riders. We provide tools for booking deliveries, tracking packages in real time, managing fleets, and processing payments.\n\nWe reserve the right to modify, suspend, or discontinue any part of the service at any time with reasonable notice.',
+                  'Opright is a logistics and package-tracking platform that connects senders (customers and businesses) with delivery riders. We provide tools for booking deliveries, tracking packages in real time, managing fleets, and processing payments.\n\nWe reserve the right to modify, suspend, or discontinue any part of the service at any time with reasonable notice.',
             ),
             const _Section(
               number: '3',
@@ -73,13 +73,13 @@ class TermsOfServiceScreen extends StatelessWidget {
               number: '6',
               title: 'Privacy Policy',
               body:
-                  'Your use of TRAKA is also governed by our Privacy Policy, which describes how we collect, use, and protect your personal information.',
+                  'Your use of Opright is also governed by our Privacy Policy, which describes how we collect, use, and protect your personal information.',
             ),
             const _Section(
               number: '7',
               title: 'Limitation of Liability',
               body:
-                  'To the fullest extent permitted by law, TRAKA shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.\n\nOur total liability shall not exceed the amount you paid us in the twelve months preceding the claim.',
+                  'To the fullest extent permitted by law, Opright shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.\n\nOur total liability shall not exceed the amount you paid us in the twelve months preceding the claim.',
             ),
             const _Section(
               number: '8',
@@ -96,7 +96,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             const _Section(
               number: '10',
               title: 'Contact Us',
-              body: 'If you have questions about these Terms, please contact us at support@traka.ng.',
+              body: 'If you have questions about these Terms, please contact us at support@opright.org.',
             ),
           ],
         ),

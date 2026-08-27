@@ -5,7 +5,7 @@ import '../models/package_model.dart';
 // ...existing code...
 import '../services/package_service.dart';
 import '../models/package_model.dart';
-import 'package:traka_mobile/services/real_time_service.dart'; // Import the real-time service
+import 'package:opright_mobile/services/real_time_service.dart'; // Import the real-time service
 
 // Provider for user's packages
 final myPackagesProvider = FutureProvider.autoDispose<List<PackageModel>>((ref) async {

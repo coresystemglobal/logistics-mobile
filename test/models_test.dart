@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:traka_mobile/models/user_model.dart';
-import 'package:traka_mobile/models/package_model.dart';
+import 'package:opright_mobile/models/user_model.dart';
+import 'package:opright_mobile/models/package_model.dart';
 
 void main() {
   group('UserModel', () {

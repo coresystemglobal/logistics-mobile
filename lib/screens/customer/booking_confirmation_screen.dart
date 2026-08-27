@@ -201,7 +201,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                           ? 'Bank Transfer on Delivery'
                           : isCash
                               ? 'Cash on Delivery'
-                              : 'TRAKA Wallet',
+                              : 'Opright Wallet',
                       style: GoogleFonts.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

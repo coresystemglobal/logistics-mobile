@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../models/package_model.dart';
 import '../../services/package_service.dart';
 
@@ -366,7 +366,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       _MethodTile(
                         id: 'wallet',
                         icon: Icons.account_balance_wallet_outlined,
-                        title: 'TRAKA Wallet',
+                        title: 'Opright Wallet',
                         subtitle: _walletBalance != null
                             ? 'Balance: ₦${_walletBalance!.toStringAsFixed(0)}'
                             : 'Pay from your wallet balance',
@@ -427,7 +427,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             // Pay button
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: TrakaButton(
+              child: OprightButton(
                 label: _selectedMethod == 'wallet' && !_walletSufficient
                     ? 'Top Up Wallet'
                     : _selectedMethod == 'transfer'

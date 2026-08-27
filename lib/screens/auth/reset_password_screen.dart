@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -119,7 +119,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       const SizedBox(height: 36),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Reset code (OTP)',
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
@@ -133,7 +133,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'New password',
                         obscureText: _obscurePassword,
                         textInputAction: TextInputAction.next,
@@ -155,7 +155,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Confirm new password',
                         obscureText: _obscureConfirm,
                         textInputAction: TextInputAction.done,
@@ -178,7 +178,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       ),
                       const SizedBox(height: 32),
 
-                      TrakaButton(
+                      OprightButton(
                         label: 'Reset Password',
                         loading: _isLoading,
                         onPressed: _isLoading ? null : _submit,

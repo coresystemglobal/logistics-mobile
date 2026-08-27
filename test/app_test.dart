@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:traka_mobile/core/api/api_client.dart';
-import 'package:traka_mobile/services/auth_service.dart';
+import 'package:opright_mobile/core/api/api_client.dart';
+import 'package:opright_mobile/services/auth_service.dart';
 
 void main() {
   group('API Client', () {

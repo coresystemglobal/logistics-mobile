@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../models/wallet_model.dart';
 import '../../services/wallet_service.dart';
 
@@ -103,7 +103,7 @@ class WalletScreen extends ConsumerWidget {
                             const SizedBox(height: 24),
                             Row(children: [
                               Expanded(
-                                child: TrakaButton(
+                                child: OprightButton(
                                   label: 'Add Money',
                                   height: 44,
                                   onPressed: () =>

@@ -27,7 +27,7 @@ class CustomerShell extends StatelessWidget {
         onTap: () => context.push('/customer/book'),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _TrakaBottomBar(
+      bottomNavigationBar: _OprightBottomBar(
         currentIndex: currentIndex,
         onTap: (i) {
           switch (i) {
@@ -48,11 +48,11 @@ class CustomerShell extends StatelessWidget {
   }
 }
 
-class _TrakaBottomBar extends StatelessWidget {
+class _OprightBottomBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const _TrakaBottomBar({
+  const _OprightBottomBar({
     required this.currentIndex,
     required this.onTap,
   });

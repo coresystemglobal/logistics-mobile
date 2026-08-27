@@ -272,7 +272,7 @@ class _CustomerHomeScreenState extends ConsumerState<CustomerHomeScreen> {
                                   children: const [
                                     TextSpan(text: 'Use code '),
                                     TextSpan(
-                                      text: 'TRAKA20',
+                                      text: 'OPRIGHT20',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w700,
                                         color: Colors.white,

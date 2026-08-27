@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-class TrakaInput extends StatefulWidget {
+class OprightInput extends StatefulWidget {
   final String hint;
   final String? label;
   final TextEditingController? controller;
@@ -25,7 +25,7 @@ class TrakaInput extends StatefulWidget {
   final bool autocorrect;
   final bool enableSuggestions;
 
-  const TrakaInput({
+  const OprightInput({
     super.key,
     required this.hint,
     this.label,
@@ -50,10 +50,10 @@ class TrakaInput extends StatefulWidget {
   });
 
   @override
-  State<TrakaInput> createState() => _TrakaInputState();
+  State<OprightInput> createState() => _OprightInputState();
 }
 
-class _TrakaInputState extends State<TrakaInput> {
+class _OprightInputState extends State<OprightInput> {
   late bool _obscure;
 
   @override

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -176,7 +176,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       Padding(
                         padding:
                             const EdgeInsets.symmetric(horizontal: 24),
-                        child: TrakaButton(
+                        child: OprightButton(
                           label: _currentPage == _slides.length - 1
                               ? 'Get Started'
                               : 'Next',

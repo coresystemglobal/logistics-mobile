@@ -15,7 +15,7 @@ import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/widgets/rider_vehicle_marker.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/package_service.dart';
 import '../../services/rider_service.dart';
@@ -226,7 +226,7 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
                       style: GoogleFonts.inter(
                           fontSize: 14, color: AppColors.textTertiary)),
                   const SizedBox(height: 24),
-                  TrakaButton(label: 'Try Again', onPressed: _loadPackage),
+                  OprightButton(label: 'Try Again', onPressed: _loadPackage),
                 ],
               ),
             ),
@@ -255,7 +255,7 @@ class _ActiveDeliveryScreenState extends ConsumerState<ActiveDeliveryScreen>
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.traka.mobile',
+                userAgentPackageName: 'com.opright.mobile',
                 maxZoom: 19,
               ),
               // Route polyline
@@ -638,30 +638,30 @@ class _ActionButtonState extends State<_ActionButton> {
     if (status == 'PENDING' || status == 'OUT_FOR_DELIVERY') {
       return Column(
         children: [
-          TrakaButton(
+          OprightButton(
             label: 'Confirm Pickup',
             loading: _loading,
             onPressed: _loading || _cancelling ? null : _confirmPickup,
           ),
           const SizedBox(height: 10),
-          TrakaButton(
+          OprightButton(
             label: 'Cancel Job',
-            variant: TrakaBtnVariant.danger,
+            variant: OprightBtnVariant.danger,
             loading: _cancelling,
             onPressed: _loading || _cancelling ? null : _cancelJob,
           ),
         ],
       );
     } else if (status == 'IN_TRANSIT') {
-      return TrakaButton(
+      return OprightButton(
         label: 'Confirm Delivery',
         loading: _loading,
         onPressed: _loading ? null : _confirmDelivery,
       );
     }
-    return TrakaButton(
+    return OprightButton(
       label: 'Back to Jobs',
-      variant: TrakaBtnVariant.secondary,
+      variant: OprightBtnVariant.secondary,
       onPressed: widget.onDone,
     );
   }

@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
 
 class EditRiderProfileScreen extends ConsumerStatefulWidget {
@@ -161,7 +161,7 @@ class _EditRiderProfileScreenState
                       ]),
                     ]),
                     const SizedBox(height: 32),
-                    TrakaButton(
+                    OprightButton(
                       label: 'Save Changes',
                       loading: _saving,
                       onPressed: _saving ? null : _save,
@@ -211,7 +211,7 @@ class _EditRiderProfileScreenState
               style: GoogleFonts.inter(
                   fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 6),
-          TrakaInput(
+          OprightInput(
             hint: hint,
             controller: ctrl,
             keyboardType: type,

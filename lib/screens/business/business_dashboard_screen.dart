@@ -300,7 +300,7 @@ class _StickyHeader extends SliverPersistentHeaderDelegate {
       child: Row(
         children: [
           Text(
-            'TRAKA Business',
+            'Opright Business',
             style: GoogleFonts.inter(
               fontSize: 22,
               fontWeight: FontWeight.w700,

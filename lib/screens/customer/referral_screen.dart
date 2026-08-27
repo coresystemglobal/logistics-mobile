@@ -19,7 +19,7 @@ final _referralStatsProvider =
 class ReferralScreen extends ConsumerWidget {
   const ReferralScreen({super.key});
 
-  static const _baseLink = 'https://traka.app/refer/';
+  static const _baseLink = 'https://opright.org/refer/';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -240,8 +240,8 @@ class ReferralScreen extends ConsumerWidget {
                               child: ElevatedButton.icon(
                                 onPressed: () => SharePlus.instance.share(
                                   ShareParams(
-                                    text: 'Use my TRAKA referral link to get 20% off your first 3 deliveries! $link',
-                                    subject: 'Join TRAKA — get 20% off your first deliveries',
+                                    text: 'Use my OPRIGHT referral link to get 20% off your first 3 deliveries! $link',
+                                    subject: 'Join OPRIGHT — get 20% off your first deliveries',
                                   ),
                                 ),
                                 icon: const Icon(Icons.share_rounded,
@@ -341,7 +341,7 @@ class ReferralScreen extends ConsumerWidget {
                       step: '2',
                       title: 'Friend signs up',
                       description:
-                          'They create a TRAKA account using your link.',
+                          'They create a OPRIGHT account using your link.',
                     ),
                     const _HowItWorksStep(
                       step: '3',

@@ -166,7 +166,7 @@ class CustomerProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'TRAKA',
+                  'OPRIGHT',
                   style: GoogleFonts.inter(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,

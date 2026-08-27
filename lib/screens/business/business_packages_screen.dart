@@ -89,7 +89,7 @@ class _BusinessPackagesScreenState extends State<BusinessPackagesScreen> {
               child: Row(
                 children: [
                   Text(
-                    'TRAKA',
+                    'OPRIGHT',
                     style: GoogleFonts.inter(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,

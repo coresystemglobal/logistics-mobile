@@ -278,7 +278,7 @@ class _FaqHeader extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            'TRAKA',
+            'OPRIGHT',
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w700,

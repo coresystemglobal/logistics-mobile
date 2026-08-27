@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterCustomerScreen extends ConsumerStatefulWidget {
@@ -145,7 +145,7 @@ class _RegisterCustomerScreenState
                       Row(
                         children: [
                           Expanded(
-                            child: TrakaInput(
+                            child: OprightInput(
                               hint: 'First name',
                               controller: _firstNameCtrl,
                               textInputAction: TextInputAction.next,
@@ -155,7 +155,7 @@ class _RegisterCustomerScreenState
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: TrakaInput(
+                            child: OprightInput(
                               hint: 'Surname',
                               controller: _surnameCtrl,
                               textInputAction: TextInputAction.next,
@@ -167,7 +167,7 @@ class _RegisterCustomerScreenState
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Email address',
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
@@ -182,7 +182,7 @@ class _RegisterCustomerScreenState
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Phone number',
                         keyboardType: TextInputType.phone,
                         textInputAction: TextInputAction.next,
@@ -199,7 +199,7 @@ class _RegisterCustomerScreenState
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Password',
                         obscureText: true,
                         textInputAction: TextInputAction.done,
@@ -216,7 +216,7 @@ class _RegisterCustomerScreenState
                       ),
                       const SizedBox(height: 14),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Referral code (optional)',
                         textInputAction: TextInputAction.next,
                         controller: _referralCtrl,
@@ -295,7 +295,7 @@ class _RegisterCustomerScreenState
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: Column(
                 children: [
-                  TrakaButton(
+                  OprightButton(
                     label: 'Create Account',
                     loading: _isLoading,
                     onPressed: _isLoading ? null : _register,

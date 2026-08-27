@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.traka.mobile"
+    namespace = "com.opright.mobile"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.traka.mobile"
+        applicationId = "com.opright.mobile"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

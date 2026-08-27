@@ -41,7 +41,7 @@ class InvoicesScreen extends ConsumerWidget {
                     child: const Icon(Icons.business_rounded, color: Colors.white, size: 18),
                   ),
                   const SizedBox(width: 8),
-                  Text('TRAKA',
+                  Text('OPRIGHT',
                       style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.accent)),
                 ],
               ),

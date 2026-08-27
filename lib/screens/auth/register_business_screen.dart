@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
 
 class RegisterBusinessScreen extends ConsumerStatefulWidget {
@@ -153,7 +153,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Ship smarter, scale faster with TRAKA.',
+                        'Ship smarter, scale faster with OPRIGHT.',
                         style: GoogleFonts.inter(
                           fontSize: 15,
                           color: AppColors.textTertiary,
@@ -161,7 +161,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                       ),
                       const SizedBox(height: 32),
 
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Business Name',
                         controller: _businessNameCtrl,
                         prefixIcon: const Icon(Icons.business_rounded,
@@ -170,7 +170,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Contact Person',
                         controller: _contactPersonCtrl,
                         prefixIcon: const Icon(Icons.person_outline_rounded,
@@ -179,7 +179,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Business Email',
                         controller: _emailCtrl,
                         keyboardType: TextInputType.emailAddress,
@@ -192,7 +192,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                         },
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Business Phone',
                         controller: _phoneCtrl,
                         keyboardType: TextInputType.phone,
@@ -202,7 +202,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Business Address',
                         controller: _addressCtrl,
                         prefixIcon: const Icon(Icons.location_on_outlined,
@@ -211,7 +211,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'CAC Registration Number',
                         controller: _cacNumberCtrl,
                         prefixIcon: const Icon(Icons.description_outlined,
@@ -220,7 +220,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             v?.isEmpty == true ? 'Required' : null,
                       ),
                       const SizedBox(height: 14),
-                      TrakaInput(
+                      OprightInput(
                         hint: 'Password',
                         controller: _passwordCtrl,
                         obscureText: true,
@@ -323,7 +323,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                       ],
                       const SizedBox(height: 24),
 
-                      TrakaButton(
+                      OprightButton(
                         label: 'Create Business Account',
                         loading: _isLoading,
                         onPressed: _register,

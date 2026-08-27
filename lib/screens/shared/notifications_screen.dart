@@ -43,7 +43,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     onPressed: () => context.pop(),
                   ),
                   Text(
-                    'TRAKA',
+                    'OPRIGHT',
                     style: GoogleFonts.inter(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,

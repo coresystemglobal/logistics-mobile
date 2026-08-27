@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../services/auth_service.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -110,7 +110,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                   ),
                   const SizedBox(height: 36),
-                  TrakaInput(
+                  OprightInput(
                     hint: 'Email address',
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.done,
@@ -125,7 +125,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onSubmitted: (_) => _submit(),
                   ),
                   const SizedBox(height: 28),
-                  TrakaButton(
+                  OprightButton(
                     label: 'Send Reset Code',
                     loading: _isLoading,
                     onPressed: _isLoading ? null : _submit,
@@ -190,9 +190,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
           ),
           const SizedBox(height: 48),
-          TrakaButton(
+          OprightButton(
             label: 'Back to Sign In',
-            variant: TrakaBtnVariant.secondary,
+            variant: OprightBtnVariant.secondary,
             onPressed: () => context.go('/auth/login'),
           ),
           const SizedBox(height: 16),

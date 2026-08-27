@@ -152,7 +152,7 @@ class TransactionDetailScreen extends StatelessWidget {
                           ),
                           _DetailRow(
                             label: 'Narration',
-                            value: narration ?? 'TRAKA Wallet Top-up',
+                            value: narration ?? 'Opright Wallet Top-up',
                             showDivider: balanceAfter != null,
                           ),
                           if (balanceAfter != null)

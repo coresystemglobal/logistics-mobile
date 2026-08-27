@@ -17,7 +17,7 @@ void main() async {
   }
   
   await dotenv.load(fileName: '.env');
-  runApp(const ProviderScope(child: TrakaApp()));
+  runApp(const ProviderScope(child: OprightApp()));
 }
 
 /// Development-only HTTP overrides to allow connections to staging servers
@@ -36,14 +36,14 @@ class _DebugHttpOverrides extends HttpOverrides {
   }
 }
 
-class TrakaApp extends ConsumerWidget {
-  const TrakaApp({super.key});
+class OprightApp extends ConsumerWidget {
+  const OprightApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'TRAKA',
+      title: 'Opright',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

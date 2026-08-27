@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../../core/api/api_client.dart';
 import '../../core/constants/api_endpoints.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../models/package_model.dart';
 import '../../services/package_service.dart';
 
@@ -335,7 +335,7 @@ class _FindingRiderScreenState extends State<FindingRiderScreen>
                   ),
                 ),
                 const Spacer(),
-                TrakaButton(
+                OprightButton(
                   label: 'Back to Home',
                   onPressed: () => context.go('/customer/home'),
                 ),
@@ -428,7 +428,7 @@ class _MapArea extends StatelessWidget {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.traka.mobile',
+              userAgentPackageName: 'com.opright.mobile',
               maxZoom: 19,
             ),
             const MarkerLayer(
@@ -566,23 +566,23 @@ class _BottomPanel extends StatelessWidget {
             const SizedBox(height: 20),
             const Divider(color: AppColors.separator, thickness: 0.5),
             const SizedBox(height: 20),
-            TrakaButton(
+            OprightButton(
               label: 'Search Again',
               onPressed: onSearchAgain,
               icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 20),
             ),
             const SizedBox(height: 10),
-            TrakaButton(
+            OprightButton(
               label: 'Search in Background',
-              variant: TrakaBtnVariant.secondary,
+              variant: OprightBtnVariant.secondary,
               onPressed: onSchedule,
               icon: const Icon(Icons.notifications_outlined,
                   color: AppColors.accent, size: 20),
             ),
             const SizedBox(height: 10),
-            TrakaButton(
+            OprightButton(
               label: 'Cancel',
-              variant: TrakaBtnVariant.ghost,
+              variant: OprightBtnVariant.ghost,
               onPressed: onCancel,
             ),
           ] else ...[
@@ -710,9 +710,9 @@ class _BottomPanel extends StatelessWidget {
 
             const SizedBox(height: 24),
             if (searching)
-              TrakaButton(
+              OprightButton(
                 label: 'Cancel Search',
-                variant: TrakaBtnVariant.ghost,
+                variant: OprightBtnVariant.ghost,
                 onPressed: onCancel,
               ),
           ],

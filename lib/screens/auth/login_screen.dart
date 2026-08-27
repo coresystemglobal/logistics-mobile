@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -100,9 +100,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 48),
-                          // TRAKA wordmark
+                          // OPRIGHT wordmark
                           Text(
-                            'TRAKA',
+                            'OPRIGHT',
                             style: GoogleFonts.inter(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
@@ -131,7 +131,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           const SizedBox(height: 40),
 
                           // Email field
-                          TrakaInput(
+                          OprightInput(
                             hint: 'Email',
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
@@ -149,7 +149,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           const SizedBox(height: 14),
 
                           // Password field
-                          TrakaInput(
+                          OprightInput(
                             hint: 'Password',
                             obscureText: true,
                             textInputAction: TextInputAction.done,

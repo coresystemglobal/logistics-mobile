@@ -5,8 +5,8 @@ class TokenStorage {
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
-  static const _accessTokenKey = 'traka_access_token';
-  static const _refreshTokenKey = 'traka_refresh_token';
+  static const _accessTokenKey = 'opright_access_token';
+  static const _refreshTokenKey = 'opright_refresh_token';
 
   static Future<void> saveTokens({
     required String accessToken,

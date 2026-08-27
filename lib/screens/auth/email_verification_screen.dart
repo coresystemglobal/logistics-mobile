@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
+import '../../core/widgets/opright_button.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/verification_service.dart';
 
@@ -215,7 +215,7 @@ class _EmailVerificationScreenState
                       }),
                     ),
                     const SizedBox(height: 36),
-                    TrakaButton(
+                    OprightButton(
                       label: 'Verify Email',
                       loading: _isLoading,
                       onPressed: _code.length == 6 ? _verify : null,

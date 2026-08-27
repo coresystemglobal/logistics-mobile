@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
-enum TrakaBtnVariant { primary, secondary, ghost, danger }
+enum OprightBtnVariant { primary, secondary, ghost, danger }
 
-class TrakaButton extends StatelessWidget {
+class OprightButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
-  final TrakaBtnVariant variant;
+  final OprightBtnVariant variant;
   final bool loading;
   final Widget? icon;
   final double height;
 
-  const TrakaButton({
+  const OprightButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.variant = TrakaBtnVariant.primary,
+    this.variant = OprightBtnVariant.primary,
     this.loading = false,
     this.icon,
     this.height = 56,
@@ -57,7 +57,7 @@ class TrakaButton extends StatelessWidget {
           );
 
     switch (variant) {
-      case TrakaBtnVariant.primary:
+      case OprightBtnVariant.primary:
         return ElevatedButton(
           onPressed: loading ? null : onPressed,
           style: ElevatedButton.styleFrom(
@@ -70,7 +70,7 @@ class TrakaButton extends StatelessWidget {
           ),
           child: child,
         );
-      case TrakaBtnVariant.secondary:
+      case OprightBtnVariant.secondary:
         return OutlinedButton(
           onPressed: loading ? null : onPressed,
           style: OutlinedButton.styleFrom(
@@ -81,7 +81,7 @@ class TrakaButton extends StatelessWidget {
           ),
           child: child,
         );
-      case TrakaBtnVariant.ghost:
+      case OprightBtnVariant.ghost:
         return TextButton(
           onPressed: loading ? null : onPressed,
           style: TextButton.styleFrom(
@@ -91,7 +91,7 @@ class TrakaButton extends StatelessWidget {
           ),
           child: child,
         );
-      case TrakaBtnVariant.danger:
+      case OprightBtnVariant.danger:
         return ElevatedButton(
           onPressed: loading ? null : onPressed,
           style: ElevatedButton.styleFrom(
@@ -108,12 +108,12 @@ class TrakaButton extends StatelessWidget {
 
   Color get _labelColor {
     switch (variant) {
-      case TrakaBtnVariant.primary:
-      case TrakaBtnVariant.danger:
+      case OprightBtnVariant.primary:
+      case OprightBtnVariant.danger:
         return Colors.white;
-      case TrakaBtnVariant.secondary:
+      case OprightBtnVariant.secondary:
         return AppColors.accent;
-      case TrakaBtnVariant.ghost:
+      case OprightBtnVariant.ghost:
         return AppColors.iosBlue;
     }
   }

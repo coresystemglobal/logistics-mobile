@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // TRAKA Brand
+  // Opright Brand
   static const Color accent = Color(0xFFFF6B00);
   static const Color accentLight = Color(0xFFFFF0E6);
   static const Color accentDark = Color(0xFFA04100);

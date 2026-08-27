@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
-import '../../core/widgets/traka_button.dart';
-import '../../core/widgets/traka_input.dart';
+import '../../core/widgets/opright_button.dart';
+import '../../core/widgets/opright_input.dart';
 import '../../models/address_model.dart';
 import '../../services/address_service.dart';
 import '../../services/package_service.dart';
@@ -310,12 +310,12 @@ class _BookDeliveryScreenState extends ConsumerState<BookDeliveryScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: _currentStep == 2
-                  ? TrakaButton(
+                  ? OprightButton(
                       label: 'Confirm & Pay',
                       loading: _isSubmitting,
                       onPressed: _isSubmitting ? null : _bookDelivery,
                     )
-                  : TrakaButton(
+                  : OprightButton(
                       label: _currentStep == 1 ? 'Continue to Review' : 'Continue',
                       loading: _isQuoting,
                       onPressed: (_currentStep == 0 && !_step1Valid) ||
@@ -519,7 +519,7 @@ class _StepAddressState extends State<_StepAddress> {
                 const SizedBox(height: 10),
                 Row(children: [
                   Expanded(
-                    child: TrakaInput(
+                    child: OprightInput(
                       hint: 'Pickup address',
                       controller: widget.pickupCtrl,
                       prefixIcon: const Icon(Icons.radio_button_checked,
@@ -537,14 +537,14 @@ class _StepAddressState extends State<_StepAddress> {
                 _sectionHeader(
                     Icons.flag_rounded, AppColors.textPrimary, 'DELIVERY DETAILS'),
                 const SizedBox(height: 10),
-                TrakaInput(
+                OprightInput(
                   hint: 'Recipient Name',
                   controller: widget.recipientNameCtrl,
                   textInputAction: TextInputAction.next,
                   onChanged: (_) { setState(() {}); widget.onFieldChanged?.call(); },
                 ),
                 const SizedBox(height: 12),
-                TrakaInput(
+                OprightInput(
                   hint: 'Recipient Phone Number',
                   controller: widget.recipientPhoneCtrl,
                   keyboardType: TextInputType.phone,
@@ -552,7 +552,7 @@ class _StepAddressState extends State<_StepAddress> {
                   onChanged: (_) { setState(() {}); widget.onFieldChanged?.call(); },
                 ),
                 const SizedBox(height: 12),
-                TrakaInput(
+                OprightInput(
                   hint: 'Full Delivery Address',
                   controller: widget.deliveryCtrl,
                   maxLines: 2,
@@ -727,7 +727,7 @@ class _StepPackage extends StatelessWidget {
                     color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500)),
             const SizedBox(height: 8),
-            TrakaInput(
+            OprightInput(
               hint: 'e.g. Handmade item, custom order...',
               controller: descriptionCtrl,
               maxLines: 2,
@@ -849,7 +849,7 @@ class _StepPackage extends StatelessWidget {
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500)),
           const SizedBox(height: 8),
-          TrakaInput(
+          OprightInput(
             hint: 'e.g. Leave at the gate, call on arrival...',
             controller: deliveryNotesCtrl,
             maxLines: 2,
@@ -1003,7 +1003,7 @@ class _StepReview extends StatelessWidget {
           const SizedBox(height: 12),
           _PaymentOption(
             icon: Icons.account_balance_wallet_outlined,
-            title: 'TRAKA Wallet',
+            title: 'Opright Wallet',
             subtitle: 'Deducted from wallet balance',
             selected: paymentMethod == 'WALLET',
             onTap: () => onPaymentMethodChanged('WALLET'),
