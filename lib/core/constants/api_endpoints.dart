@@ -57,6 +57,7 @@ class ApiEndpoints {
   static const String walletTransactions = '/wallet/transactions';
   static const String walletBankAccount = '/wallet/bank-account';
   static const String walletFundInitialize = '/wallet/fund/initialize';
+  static const String walletBusinessFundInitialize = '/wallet/business/fund/initialize';
   static const String walletFundVerify = '/wallet/fund/verify';
   static const String walletPayout = '/wallet/payout';
   static const String walletPayForDelivery = '/wallet/pay-for-delivery';

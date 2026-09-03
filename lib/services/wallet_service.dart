@@ -25,11 +25,11 @@ class WalletService {
         .toList();
   }
 
-  /// Step 1: Initialise a payment gateway funding session.
-  /// Returns `{ authorization_url, reference, provider }` from the server.
+  /// Step 1: Initialise a Paystack funding session for a personal wallet.
+  /// Returns `{ payment: { checkout_url, access_code, reference, provider } }`.
   Future<Map<String, dynamic>> initializeFunding({
     required double amount,
-    required String provider, // 'paystack' | 'monnify' | 'flutterwave'
+    required String provider,
     String? callbackUrl,
   }) async {
     final response = await _api.post(
@@ -37,6 +37,22 @@ class WalletService {
       data: {
         'amount': amount,
         'provider': provider,
+        if (callbackUrl != null) 'callback_url': callbackUrl,
+      },
+    );
+    return response;
+  }
+
+  /// Step 1b: Initialise a Paystack checkout for a business wallet.
+  /// Provider is always Paystack — no param needed.
+  Future<Map<String, dynamic>> initializeBusinessFunding({
+    required double amount,
+    String? callbackUrl,
+  }) async {
+    final response = await _api.post(
+      ApiEndpoints.walletBusinessFundInitialize,
+      data: {
+        'amount': amount,
         if (callbackUrl != null) 'callback_url': callbackUrl,
       },
     );

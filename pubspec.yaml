@@ -31,6 +31,9 @@ dependencies:
   # WebSockets (Socket.IO)
   socket_io_client: ^2.0.3+1
 
+  # In-app WebView for payment pages
+  flutter_inappwebview: ^6.1.5
+
   # Image handling
   image_picker: ^1.0.7
   cached_network_image: ^3.3.1
