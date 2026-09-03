@@ -23,7 +23,7 @@ class _FundState {
 
   const _FundState({
     this.amount = 5000,
-    this.provider = 'kuda',
+    this.provider = 'paystack',
     this.loading = false,
     this.error,
   });
@@ -280,21 +280,21 @@ class _FundWalletScreenState extends ConsumerState<FundWalletScreen> {
                       ),
                       const SizedBox(height: 12),
                       _PaymentMethodCard(
-                        id: 'kuda',
-                        title: 'Bank Transfer (DVA)',
-                        subtitle: 'Dedicated virtual account · Instant',
-                        icon: Icons.account_balance_rounded,
-                        selected: state.provider == 'kuda',
-                        onTap: () => notifier.setProvider('kuda'),
-                      ),
-                      const SizedBox(height: 10),
-                      _PaymentMethodCard(
                         id: 'paystack',
-                        title: 'Card / USSD / Bank',
-                        subtitle: 'Paystack checkout · Instant',
+                        title: 'Card / Bank Transfer / USSD',
+                        subtitle: 'Paystack checkout · All methods',
                         icon: Icons.credit_card_rounded,
                         selected: state.provider == 'paystack',
                         onTap: () => notifier.setProvider('paystack'),
+                      ),
+                      const SizedBox(height: 10),
+                      _PaymentMethodCard(
+                        id: 'flutterwave',
+                        title: 'Card / Mobile Money',
+                        subtitle: 'Flutterwave · Processing fee may apply',
+                        icon: Icons.payment_rounded,
+                        selected: state.provider == 'flutterwave',
+                        onTap: () => notifier.setProvider('flutterwave'),
                       ),
                     ] else ...[
                       // Business — show a single info tile
