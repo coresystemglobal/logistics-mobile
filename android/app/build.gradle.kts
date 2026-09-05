@@ -1,8 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 android {
@@ -15,10 +22,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         applicationId = "com.opright.mobile"
         minSdk = flutter.minSdkVersion
@@ -27,35 +30,22 @@ android {
         versionName = flutter.versionName
     }
 
-    // Release signing configuration - loads from key.properties (gitignored)
-    // Create android/key.properties with:
-    // storePassword=<keystore_password>
-    // keyPassword=<key_password>
-    // keyAlias=upload
-    // storeFile=../keystore/upload-keystore.jks
-    val keystorePropertiesFile = rootProject.file("key.properties")
     if (keystorePropertiesFile.exists()) {
-        val keystoreProperties = Properties()
-        keystoreProperties.load(keystorePropertiesFile.newDataInputStream())
-        
         signingConfigs {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
             }
         }
     }
 
     buildTypes {
         release {
-            // Use release signing config if available, otherwise debug (for CI)
             signingConfig = signingConfigs.getByName(
                 if (keystorePropertiesFile.exists()) "release" else "debug"
             )
-            
-            // Enable code shrinking and obfuscation
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -63,6 +53,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
