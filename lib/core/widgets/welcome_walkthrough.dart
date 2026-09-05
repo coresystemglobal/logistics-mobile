@@ -10,7 +10,7 @@ const _customerSteps = <_Step>[
     emoji: '🎉',
     title: 'Welcome to Opright!',
     description:
-        "You're all set. OPRIGHT connects you with riders who deliver your packages fast, anywhere in Nigeria.",
+        "You're all set. Opright Logistics connects you with riders who deliver your packages fast, anywhere in Nigeria.",
   ),
   (
     emoji: '📦',

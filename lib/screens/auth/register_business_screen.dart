@@ -228,7 +228,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             color: AppColors.textTertiary, size: 20),
                         validator: (v) {
                           if (v?.isEmpty == true) return 'Required';
-                          if (v!.length < 8) return 'Minimum 8 characters';
+                          if (v!.length < 10) return 'Minimum 10 characters';
                           return null;
                         },
                       ),

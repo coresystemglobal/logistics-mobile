@@ -233,7 +233,7 @@ class _RegisterRiderScreenState extends ConsumerState<RegisterRiderScreen> {
                             color: AppColors.textTertiary, size: 20),
                         validator: (v) {
                           if (v?.isEmpty == true) return 'Required';
-                          if (v!.length < 8) return 'Min 8 characters';
+                          if (v!.length < 10) return 'Min 10 characters';
                           return null;
                         },
                       ),
