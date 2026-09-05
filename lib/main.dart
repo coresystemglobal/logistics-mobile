@@ -49,6 +49,19 @@ class OprightApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       routerConfig: router,
+      scrollBehavior: const _NoStretchScrollBehavior(),
     );
+  }
+}
+
+// Disables Android's stretch overscroll effect so RefreshIndicator
+// triggers correctly instead of stretching the screen.
+class _NoStretchScrollBehavior extends ScrollBehavior {
+  const _NoStretchScrollBehavior();
+
+  @override
+  Widget buildOverscrollIndicator(
+      BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
   }
 }
