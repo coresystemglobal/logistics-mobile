@@ -7,6 +7,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/opright_button.dart';
 import '../../core/widgets/opright_input.dart';
 import '../../providers/auth_provider.dart';
+import '../../core/constants/validation_rules.dart';
 
 class RegisterBusinessScreen extends ConsumerStatefulWidget {
   const RegisterBusinessScreen({super.key});
@@ -228,7 +229,7 @@ class _RegisterBusinessScreenState extends ConsumerState<RegisterBusinessScreen>
                             color: AppColors.textTertiary, size: 20),
                         validator: (v) {
                           if (v?.isEmpty == true) return 'Required';
-                          if (v!.length < 10) return 'Minimum 10 characters';
+                          if (v!.length < ValidationRules.minPasswordLength) return ValidationRules.passwordTooShort();
                           return null;
                         },
                       ),

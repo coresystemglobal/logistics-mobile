@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../services/auth_service.dart';
+import '../../core/constants/validation_rules.dart';
 
 class ChangePasswordScreen extends ConsumerStatefulWidget {
   const ChangePasswordScreen({super.key});
@@ -41,8 +42,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       setState(() => _error = 'All fields are required.');
       return;
     }
-    if (newPass.length < 8) {
-      setState(() => _error = 'New password must be at least 8 characters.');
+    if (newPass.length < ValidationRules.minPasswordLength) {
+      setState(() => _error = '${ValidationRules.passwordTooShort()}.');
       return;
     }
     if (newPass != confirm) {

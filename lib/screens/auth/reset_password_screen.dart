@@ -5,6 +5,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/widgets/opright_button.dart';
 import '../../core/widgets/opright_input.dart';
 import '../../services/auth_service.dart';
+import '../../core/constants/validation_rules.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -149,7 +150,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         ),
                         validator: (v) {
                           if (v?.isEmpty == true) return 'Required';
-                          if (v!.length < 8) return 'Minimum 8 characters';
+                          if (v!.length < ValidationRules.minPasswordLength) return ValidationRules.passwordTooShort();
                           return null;
                         },
                       ),
