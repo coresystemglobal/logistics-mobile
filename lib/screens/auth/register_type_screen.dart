@@ -27,17 +27,6 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen> {
       selectedBg: Color(0xFFFFF1EB),
     ),
     _AccountType(
-      id: 'rider',
-      title: 'Rider',
-      subtitle:
-          'Deliver packages and earn on your schedule. Flexible hours, great pay.',
-      icon: Icons.two_wheeler_rounded,
-      iconBg: Color(0xFFE9F7EF),
-      iconColor: AppColors.success,
-      borderColor: AppColors.success,
-      selectedBg: Color(0xFFEAF7EF),
-    ),
-    _AccountType(
       id: 'business',
       title: 'Business',
       subtitle:
@@ -55,8 +44,6 @@ class _RegisterTypeScreenState extends State<RegisterTypeScreen> {
     switch (_selectedType) {
       case 'customer':
         context.push('/auth/register/customer');
-      case 'rider':
-        context.push('/auth/register/rider');
       case 'business':
         context.push('/auth/register/business');
     }

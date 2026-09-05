@@ -7,7 +7,6 @@ import '../../screens/auth/welcome_screen.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../screens/auth/register_type_screen.dart';
 import '../../screens/auth/register_customer_screen.dart';
-import '../../screens/auth/register_rider_screen.dart';
 import '../../screens/auth/register_business_screen.dart';
 import '../../screens/auth/forgot_password_screen.dart';
 import '../../screens/auth/reset_password_screen.dart';
@@ -84,7 +83,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/auth/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/auth/register', builder: (_, __) => const RegisterTypeScreen()),
       GoRoute(path: '/auth/register/customer', builder: (_, __) => const RegisterCustomerScreen()),
-      GoRoute(path: '/auth/register/rider', builder: (_, __) => const RegisterRiderScreen()),
       GoRoute(path: '/auth/register/business', builder: (_, __) => const RegisterBusinessScreen()),
       GoRoute(path: '/auth/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(
