@@ -38,9 +38,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
     final authState = ref.read(authProvider);
     if (authState.status == AuthStatus.authenticated) {
-      if (authState.isRider) {
-        context.go('/rider/jobs');
-      } else if (authState.user?.role == 'BUSINESS') {
+      if (authState.user?.role == 'BUSINESS') {
         context.go('/business/dashboard');
       } else {
         context.go('/customer/home');

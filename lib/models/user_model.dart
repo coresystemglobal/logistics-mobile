@@ -53,7 +53,6 @@ class UserModel {
         'email_verified': emailVerified,
       };
 
-  bool get isRider => role == 'RIDER';
   bool get isUser => role == 'USER';
   bool get isBusinessOwner => role == 'BUSINESS_OWNER';
   bool get isAdmin =>

@@ -19,11 +19,6 @@ import '../../screens/customer/tracking_screen.dart';
 import '../../screens/customer/order_history_screen.dart';
 import '../../screens/customer/customer_profile_screen.dart';
 import '../../screens/customer/wallet_screen.dart';
-import '../../screens/rider/rider_shell.dart';
-import '../../screens/rider/available_jobs_screen.dart';
-import '../../screens/rider/active_delivery_screen.dart';
-import '../../screens/rider/earnings_screen.dart';
-import '../../screens/rider/rider_profile_screen.dart';
 import '../../screens/shared/notifications_screen.dart';
 import '../../screens/shared/package_chat_screen.dart';
 import '../../screens/shared/faq_screen.dart';
@@ -65,7 +60,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (status == AuthStatus.authenticated && isAuthRoute) {
-        if (authState.isRider) return '/rider/jobs';
         if (authState.user?.isBusinessOwner == true) return '/business/dashboard';
         return '/customer/home';
       }
@@ -206,22 +200,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/faq', builder: (_, __) => const FaqScreen()),
       GoRoute(path: '/terms-of-service', builder: (_, __) => const TermsOfServiceScreen()),
       GoRoute(path: '/business/invoices', builder: (_, __) => const InvoicesScreen()),
-
-      // Rider shell
-      ShellRoute(
-        builder: (context, state, child) => RiderShell(child: child),
-        routes: [
-          GoRoute(path: '/rider/jobs', builder: (_, __) => const AvailableJobsScreen()),
-          GoRoute(path: '/rider/earnings', builder: (_, __) => const EarningsScreen()),
-          GoRoute(path: '/rider/profile', builder: (_, __) => const RiderProfileScreen()),
-        ],
-      ),
-      GoRoute(
-        path: '/rider/active/:packageId',
-        builder: (context, state) => ActiveDeliveryScreen(
-          packageId: state.pathParameters['packageId']!,
-        ),
-      ),
 
       // Business shell
       ShellRoute(

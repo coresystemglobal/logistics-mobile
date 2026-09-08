@@ -5,7 +5,6 @@ class ApiEndpoints {
   static const String getMe = '/auth/me';
   static const String refreshToken = '/auth/refresh';
   static const String registerCustomer = '/auth/register/customer';
-  static const String registerRider = '/auth/register/rider';
   static const String registerBusiness = '/auth/register/business';
   static const String passwordResetRequest = '/auth/password/reset-request';
   static const String passwordResetConfirm = '/auth/password/reset-confirm';
@@ -25,15 +24,6 @@ class ApiEndpoints {
   static String packageById(String id) => '/packages/by-id/$id';
   static String confirmPickup(String id) => '/packages/$id/confirm-pickup';
   static String confirmDelivery(String id) => '/packages/$id/confirm-delivery';
-
-  // Riders
-  static const String riderJobs = '/riders/jobs';
-  static const String riderActiveJobs = '/riders/jobs/active';
-  static const String riderProfile = '/riders/profile';
-  static const String riderLocation = '/riders/location';
-  static const String riderStatus = '/riders/status';
-  static const String riderAvailability = '/riders/availability';
-  static const String riderEligibility = '/riders/eligibility';
 
   // Matching
   static String courierLocation(String courierId) =>
@@ -128,7 +118,6 @@ class ApiEndpoints {
       '/verification/trigger-delivery-code/$packageId';
 
   // Dashboard
-  static const String dashboardRider = '/dashboard/rider';
   static const String dashboardManager = '/dashboard/manager';
   static const String dashboardManagerRiders = '/dashboard/manager/riders';
   static const String dashboardManagerPackages = '/dashboard/manager/packages';

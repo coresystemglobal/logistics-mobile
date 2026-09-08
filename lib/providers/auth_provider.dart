@@ -31,7 +31,6 @@ class AuthState {
         user = null;
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
-  bool get isRider => user?.isRider ?? false;
   bool get isCustomer => user?.isUser ?? false;
 }
 
@@ -90,31 +89,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       phone: phone,
       password: password,
       referralCode: referralCode,
-    );
-    // Tokens are saved but state stays unauthenticated until email is verified.
-  }
-
-  Future<void> registerRider({
-    required String firstName,
-    required String surname,
-    required String email,
-    required String phone,
-    required String password,
-    required String vehicleType,
-    String? referralCode,
-    String? licenseNumber,
-    String? vehiclePlate,
-  }) async {
-    await _authService.registerRider(
-      firstName: firstName,
-      surname: surname,
-      email: email,
-      phone: phone,
-      password: password,
-      vehicleType: vehicleType,
-      referralCode: referralCode,
-      licenseNumber: licenseNumber,
-      vehiclePlate: vehiclePlate,
     );
     // Tokens are saved but state stays unauthenticated until email is verified.
   }

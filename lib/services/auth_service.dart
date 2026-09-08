@@ -56,44 +56,6 @@ class AuthService {
     return response;
   }
 
-  Future<Map<String, dynamic>> registerRider({
-    required String firstName,
-    required String surname,
-    required String email,
-    required String phone,
-    required String password,
-    required String vehicleType,
-    String? referralCode,
-    String? licenseNumber,
-    String? vehiclePlate,
-  }) async {
-    final data = {
-      'first_name': firstName,
-      'surname': surname,
-      'email': email,
-      'phone': phone,
-      'password': password,
-      'vehicle_type': vehicleType,
-      'terms_accepted': true,
-      if (referralCode != null && referralCode.isNotEmpty)
-        'referral_code': referralCode,
-      if (licenseNumber != null && licenseNumber.isNotEmpty)
-        'license_number': licenseNumber,
-      if (vehiclePlate != null && vehiclePlate.isNotEmpty)
-        'vehicle_plate': vehiclePlate,
-    };
-    final response = await _api.post(ApiEndpoints.registerRider, data: data);
-    final accessToken = response['access_token'] ?? response['token'];
-    final refreshToken = response['refresh_token'];
-    if (accessToken != null) {
-      await TokenStorage.saveTokens(
-        accessToken: accessToken,
-        refreshToken: refreshToken ?? '',
-      );
-    }
-    return response;
-  }
-
   Future<Map<String, dynamic>> registerBusiness({
     required String businessName,
     required String contactPerson,
